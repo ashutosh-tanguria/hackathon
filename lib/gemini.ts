@@ -5,5 +5,5 @@ const apiKey = process.env.GEMINI_API_KEY!;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export const gemini = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+  model: "gemini-3.6-flash",
 });

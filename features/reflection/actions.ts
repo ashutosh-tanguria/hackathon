@@ -50,24 +50,41 @@ export async function saveReflection(
     throw new Error("Unauthorized");
   }
 
-  return prisma.reflectionSession.create({
-    data: {
-      summary: reflection.summary,
+  const created =
+    await prisma.reflectionSession.create({
+      data: {
+        summary: reflection.summary,
 
-      aiFeedback: JSON.stringify({
-        strengths:
-          reflection.strengths,
+        aiFeedback: JSON.stringify({
+          strengths:
+            reflection.strengths,
 
-        improvements:
-          reflection.improvements,
+          improvements:
+            reflection.improvements,
 
-        nextAction:
-          reflection.nextAction,
-      }),
+          nextAction:
+            reflection.nextAction,
 
-      userId: user.id,
-    },
-  });
+          recommendation: `
+Focus tomorrow on:
+${reflection.nextAction}
+
+Main improvement area:
+${reflection.improvements.join(", ")}
+
+Strengths:
+${reflection.strengths.join(", ")}
+`,
+        }),
+
+        userId: user.id,
+      },
+    });
+
+  return {
+  success: true,
+  reflection: created,
+};
 }
 
 export async function getReflections() {
@@ -77,13 +94,16 @@ export async function getReflections() {
     throw new Error("Unauthorized");
   }
 
-  return prisma.reflectionSession.findMany({
-    where: {
-      userId: user.id,
-    },
+  const reflections =
+    await prisma.reflectionSession.findMany({
+      where: {
+        userId: user.id,
+      },
 
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+  return reflections;
 }

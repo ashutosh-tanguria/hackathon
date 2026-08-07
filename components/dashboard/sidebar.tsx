@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   Home,
   Target,
   Brain,
   Map,
+  Clock,
+  BarChart3,
   MessageSquare,
+  Mic,
   User,
   Settings,
 } from "lucide-react";
@@ -18,11 +22,11 @@ const links = [
     href: "/dashboard",
     icon: Home,
   },
-{
-  title: "Goals",
-  href: "/goals",
-  icon: Target,
-},
+  {
+    title: "Goals",
+    href: "/goals",
+    icon: Target,
+  },
   {
     title: "Assessment",
     href: "/assessment",
@@ -34,10 +38,25 @@ const links = [
     icon: Map,
   },
   {
-  title: "Reflection",
-  href: "/reflection",
-  icon: MessageSquare,
-},
+    title: "Study Sessions",
+    href: "/sessions",
+    icon: Clock,
+  },
+  {
+    title: "Analytics",
+    href: "/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Reflection",
+    href: "/reflection",
+    icon: MessageSquare,
+  },
+  {
+    title: "Voice Companion",
+    href: "/voice",
+    icon: Mic,
+  },
   {
     title: "Profile",
     href: "/profile",
@@ -54,7 +73,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-background">
+    <aside className="flex w-64 flex-col border-r bg-background">
       <div className="border-b p-6">
         <h1 className="text-2xl font-bold">
           StudyOS

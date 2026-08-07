@@ -96,7 +96,9 @@ model RoadmapNode {
 
   difficulty      Difficulty
 
-  completed       Boolean     @default(false)
+  completed Boolean @default(false)
+
+completedAt DateTime?
 
   position        Int
 

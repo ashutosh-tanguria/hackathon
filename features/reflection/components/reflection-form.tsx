@@ -41,16 +41,18 @@ export function ReflectionForm() {
     }
 
     try {
-      const response =
-        await reflection.mutateAsync(
-          text
-        );
+     const response =
+  await reflection.mutateAsync(
+    text
+  );
 
-      setResult(response);
+setResult(response);
 
-      toast.success(
-        "Reflection analyzed."
-      );
+setText("");
+
+toast.success(
+  "Reflection saved successfully."
+);
     } catch (error) {
       console.error(error);
 

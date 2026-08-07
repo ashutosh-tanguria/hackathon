@@ -29,3 +29,12 @@ export function useSaveRoadmap() {
       ),
   });
 }
+
+export function useToggleRoadmapNode() {
+  return useMutation({
+    mutationFn: (nodeId: string) =>
+      RoadmapService.toggleRoadmapNode(
+        nodeId
+      ),
+  });
+}

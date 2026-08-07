@@ -55,9 +55,13 @@ export function CreateGoalDialog({ onSubmit }: CreateGoalDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button>Create Goal</Button>
-      </DialogTrigger>
+      <DialogTrigger
+  render={
+    <Button>
+      Create Goal
+    </Button>
+  }
+/>
 
       <DialogContent>
         <DialogHeader>

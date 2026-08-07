@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
+import { RoadmapList } from "@/features/roadmap/components/roadmap-list";
 
 export default async function RoadmapPage() {
   const user = await getCurrentUser();
@@ -66,28 +67,9 @@ export default async function RoadmapPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
-        {roadmap.nodes.map((node) => (
-          <div
-            key={node.id}
-            className="rounded-lg border p-5"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                Week {node.week}: {node.title}
-              </h2>
-
-              <span className="rounded bg-primary/10 px-3 py-1 text-sm">
-                {node.difficulty}
-              </span>
-            </div>
-
-            <p className="mt-2 text-muted-foreground">
-              {node.description}
-            </p>
-          </div>
-        ))}
-      </div>
+      <RoadmapList
+  nodes={roadmap.nodes}
+/>
     </div>
   );
 }

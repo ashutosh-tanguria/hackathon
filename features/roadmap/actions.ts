@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { gemini } from "@/lib/gemini";
 
 import { ROADMAP_SYSTEM_PROMPT } from "./prompts";
+
 import {
   roadmapSchema,
   AIRoadmap,
@@ -70,6 +71,8 @@ export async function saveRoadmap(
             difficulty:
               node.difficulty,
 
+            completed: false,
+
             position: index,
           })
         ),
@@ -79,6 +82,34 @@ export async function saveRoadmap(
     include: {
       nodes: true,
       goal: true,
+    },
+  });
+}
+
+export async function toggleRoadmapNode(
+  nodeId: string
+) {
+  const node =
+    await prisma.roadmapNode.findUnique({
+      where: {
+        id: nodeId,
+      },
+    });
+
+  if (!node) {
+    throw new Error(
+      "Roadmap node not found."
+    );
+  }
+
+  return prisma.roadmapNode.update({
+    where: {
+      id: nodeId,
+    },
+
+    data: {
+      completed:
+        !node.completed,
     },
   });
 }

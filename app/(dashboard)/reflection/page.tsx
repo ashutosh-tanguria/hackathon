@@ -1,21 +1,24 @@
 import { ReflectionForm } from "@/features/reflection/components/reflection-form";
+import { ReflectionHistory } from "@/features/reflection/components/reflection-history";
 
 export default function ReflectionPage() {
   return (
-    <div className="container mx-auto max-w-5xl py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          AI Reflection
+    <main className="space-y-8">
+
+      <div>
+        <h1 className="text-4xl font-bold">
+          Reflection Journal
         </h1>
 
-        <p className="mt-2 text-muted-foreground">
-          Reflect on today&apos;s learning and let AI
-          analyze your strengths, weaknesses, and
-          recommend your next step.
+        <p className="text-muted-foreground mt-2">
+          Reflect on today&apos;s learning and let AI guide your improvement.
         </p>
       </div>
 
       <ReflectionForm />
-    </div>
+
+      <ReflectionHistory />
+
+    </main>
   );
 }
