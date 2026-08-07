@@ -1,0 +1,31 @@
+"use client";
+
+import { useMutation } from "@tanstack/react-query";
+
+import { RoadmapService } from "./service";
+import { AIRoadmap } from "./schema";
+
+export function useGenerateRoadmap() {
+  return useMutation({
+    mutationFn: (assessment: unknown) =>
+      RoadmapService.generateRoadmap(
+        assessment
+      ),
+  });
+}
+
+export function useSaveRoadmap() {
+  return useMutation({
+    mutationFn: ({
+      goalId,
+      roadmap,
+    }: {
+      goalId: string;
+      roadmap: AIRoadmap;
+    }) =>
+      RoadmapService.saveRoadmap(
+        goalId,
+        roadmap
+      ),
+  });
+}

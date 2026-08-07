@@ -1,0 +1,223 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GoalCategory {
+  SCHOOL
+  JEE
+  NEET
+  UPSC
+  PROGRAMMING
+  AI_ML
+  CUSTOM
+}
+
+enum RoadmapNodeStatus {
+  LOCKED
+  AVAILABLE
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+model User {
+  id    String  @id @default(cuid())
+  name  String?
+  email String  @unique
+  image String?
+
+  goals            Goal[]
+  learningSessions LearningSession[]
+  practiceSessions PracticeSession[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  emailVerified Boolean   @default(false)
+  reflectionSessions ReflectionSession[]
+knowledgeNodes     KnowledgeNode[]
+  sessions      Session[]
+  accounts      Account[]
+  
+
+  @@map("user")
+}
+
+model Goal {
+  id String @id @default(cuid())
+
+  title       String
+  description String?
+
+  category GoalCategory
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roadmap Roadmap?
+
+  createdAt DateTime @default(now())
+}
+
+model Roadmap {
+  id              String        @id @default(cuid())
+
+  title           String
+
+  estimatedWeeks  Int
+
+  createdAt       DateTime      @default(now())
+
+  updatedAt       DateTime      @updatedAt
+
+  goalId          String        @unique
+  goal            Goal          @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  nodes           RoadmapNode[]
+}
+
+model RoadmapNode {
+  id              String      @id @default(cuid())
+
+  title           String
+
+  description     String
+
+  week            Int
+
+  difficulty      Difficulty
+
+  completed       Boolean     @default(false)
+
+  position        Int
+
+  createdAt       DateTime    @default(now())
+
+  roadmapId       String
+  roadmap         Roadmap     @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model LearningSession {
+  id String @id @default(cuid())
+
+  title String
+
+  startedAt DateTime @default(now())
+
+  endedAt DateTime?
+
+  duration Int?
+
+  status SessionStatus @default(ACTIVE)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model PracticeSession {
+  id String @id @default(cuid())
+
+  title String
+
+  totalQuestions Int
+
+  correctQuestions Int @default(0)
+
+  averageTime Int?
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model ReflectionSession {
+  id        String   @id @default(cuid())
+
+  summary   String?
+  aiFeedback String?
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model KnowledgeNode {
+  id String @id @default(cuid())
+
+  title String
+
+  mastery Float @default(0)
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
