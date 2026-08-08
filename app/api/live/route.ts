@@ -3,24 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-const GEMINI_LIVE_TOKEN_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1alpha/auth_tokens";
-
 export async function POST() {
   try {
-    if (!GEMINI_API_KEY) {
-      return NextResponse.json(
-        {
-          error: "Gemini API key is not configured",
-        },
-        {
-          status: 500,
-        },
-      );
-    }
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -83,92 +67,45 @@ export async function POST() {
         }),
       ]);
 
-    const context = {
-      user: {
-        name: session.user.name,
-      },
-      goals,
-      roadmap,
-      reflections,
-    };
-
-    const response = await fetch(
-      GEMINI_LIVE_TOKEN_ENDPOINT,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GEMINI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          uses: {
-            generateContent: true,
-            bidiGenerateContent: true,
-          },
-          liveSession: {
-            model:
-              "models/gemini-2.0-flash-live-001",
-
-            config: {
-              responseModalities: [
-                "AUDIO",
-              ],
-
-              systemInstruction: {
-                parts: [
-                  {
-                    text: `
+    const context = `
 You are StudyOS Voice Companion.
 
+Student:
+${session.user.name}
+
+Goals:
+${JSON.stringify(goals)}
+
+Roadmap:
+${JSON.stringify(roadmap)}
+
+Reflections:
+${JSON.stringify(reflections)}
+
 Help the student with:
-- learning guidance
 - study planning
+- learning guidance
 - reflection
 - productivity
 - roadmap execution
 
-Use the following student context:
-
-${JSON.stringify(context, null, 2)}
-
-Be concise, motivating, and practical.
-                    `,
-                  },
-                ],
-              },
-            },
-          },
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      const error =
-        await response.text();
-
-      console.error(
-        "Gemini token error:",
-        error,
-      );
-
-      return NextResponse.json(
-        {
-          error:
-            "Failed to create Gemini Live token",
-        },
-        {
-          status: 500,
-        },
-      );
-    }
-
-    const tokenData =
-      await response.json();
+Keep responses concise and practical.
+`;
 
     return NextResponse.json({
-      token: tokenData.name,
-      expiresAt:
-        tokenData.expireTime,
+      config: {
+        responseModalities: [
+          "AUDIO",
+        ],
+
+        systemInstruction: {
+          parts: [
+            {
+              text: context,
+            },
+          ],
+        },
+      },
     });
   } catch (error) {
     console.error(
@@ -178,7 +115,8 @@ Be concise, motivating, and practical.
 
     return NextResponse.json(
       {
-        error: "Internal server error",
+        error:
+          "Failed to initialize voice companion",
       },
       {
         status: 500,

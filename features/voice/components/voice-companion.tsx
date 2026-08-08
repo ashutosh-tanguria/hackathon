@@ -3,7 +3,10 @@
 import {
   Mic,
   MicOff,
+  Phone,
   PhoneOff,
+  Volume2,
+  Zap,
 } from "lucide-react";
 
 import {
@@ -30,48 +33,66 @@ export function VoiceCompanion() {
   } = useVoiceCompanion();
 
   return (
-    <Card className="w-full max-w-xl">
+    <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Zap size={20} />
           StudyOS Voice Companion
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            Connection:
-            <span className="ml-2 font-medium">
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between">
+            <span>Connection</span>
+
+            <span>
               {state.connected
                 ? "Connected"
                 : "Disconnected"}
             </span>
           </div>
 
-          <div>
-            Microphone:
-            <span className="ml-2 font-medium">
-              {state.listening
-                ? "Active"
-                : "Inactive"}
+          <div className="flex items-center justify-between">
+            <span>Microphone</span>
+
+            <span className="flex items-center gap-2">
+              {state.listening ? (
+                <>
+                  <Mic size={16} />
+                  Listening
+                </>
+              ) : (
+                <>
+                  <MicOff size={16} />
+                  Off
+                </>
+              )}
             </span>
           </div>
 
-          <div>
-            AI:
-            <span className="ml-2 font-medium">
-              {state.speaking
-                ? "Speaking"
-                : "Idle"}
+          <div className="flex items-center justify-between">
+            <span>AI Voice</span>
+
+            <span className="flex items-center gap-2">
+              {state.speaking ? (
+                <>
+                  <Volume2 size={16} />
+                  Speaking
+                </>
+              ) : (
+                "Idle"
+              )}
             </span>
           </div>
 
-          <div>
-            Status:
-            <span className="ml-2 font-medium">
+          <div className="flex items-center justify-between">
+            <span>Interrupt</span>
+
+            <span>
               {state.interrupted
-                ? "Interrupted"
-                : "Normal"}
+                ? "Detected"
+                : "None"}
             </span>
           </div>
         </div>
@@ -79,29 +100,30 @@ export function VoiceCompanion() {
         <div className="flex gap-3">
           {!state.connected ? (
             <Button
+              className="flex-1"
               onClick={start}
             >
-              <Mic className="mr-2 h-4 w-4" />
+              <Phone size={16} />
               Start Companion
             </Button>
           ) : (
-            <>
-              <Button
-                variant="secondary"
-                onClick={interrupt}
-              >
-                <MicOff className="mr-2 h-4 w-4" />
-                Interrupt
-              </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={stop}
+            >
+              <PhoneOff size={16} />
+              Stop
+            </Button>
+          )}
 
-              <Button
-                variant="destructive"
-                onClick={stop}
-              >
-                <PhoneOff className="mr-2 h-4 w-4" />
-                End Session
-              </Button>
-            </>
+          {state.speaking && (
+            <Button
+              variant="outline"
+              onClick={interrupt}
+            >
+              Interrupt
+            </Button>
           )}
         </div>
       </CardContent>

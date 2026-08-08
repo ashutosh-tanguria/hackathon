@@ -1,180 +1,431 @@
-import type {
-  LiveServerMessage,
-  LiveClientMessage,
-} from "@/features/voice/types";
+"use client";
 
-const GEMINI_LIVE_WS_URL =
-  "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent";
+export type GeminiLiveCallbacks = {
+  onOpen?: () => void;
+
+  onAudio?: (
+    data: string,
+    mimeType: string,
+  ) => void;
+
+  onText?: (
+    text: string,
+  ) => void;
+
+  onInterrupted?: () => void;
+
+  onTurnComplete?: () => void;
+
+  onSetupComplete?: () => void;
+
+  onMessage?: (
+    data: unknown,
+  ) => void;
+
+  onError?: (
+    error: unknown,
+  ) => void;
+
+  onClose?: (
+    event: CloseEvent,
+  ) => void;
+};
+
+
+type GeminiPart = {
+  text?: string;
+
+  inlineData?: {
+    data?: string;
+    mimeType?: string;
+  };
+};
+
+
+type GeminiMessage = {
+  setupComplete?: unknown;
+
+  serverContent?: {
+    interrupted?: boolean;
+
+    turnComplete?: boolean;
+
+    modelTurn?: {
+      parts?: GeminiPart[];
+    };
+  };
+};
+
+
+const DEFAULT_WS_URL =
+  process.env.NEXT_PUBLIC_LIVE_WS_URL ??
+  "ws://localhost:8000";
+
+
 
 export class GeminiLiveClient {
-  private socket: WebSocket | null = null;
 
-  private token: string;
+  private socket:
+    WebSocket | null = null;
 
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
 
-  private listeners = new Map<
-    string,
-    Set<(data: unknown) => void>
-  >();
+  private callbacks:
+    GeminiLiveCallbacks;
 
-  constructor(token: string) {
-    this.token = token;
+
+  private url:
+    string;
+
+
+
+  constructor(
+    callbacks: GeminiLiveCallbacks = {},
+    url: string = DEFAULT_WS_URL,
+  ) {
+
+    this.callbacks =
+      callbacks;
+
+    this.url =
+      url;
+
   }
+
+
 
   connect() {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        this.socket = new WebSocket(
-          `${GEMINI_LIVE_WS_URL}?access_token=${this.token}`,
-        );
 
-        this.socket.binaryType = "arraybuffer";
+    return new Promise<void>(
+      (
+        resolve,
+        reject,
+      ) => {
 
-        this.socket.onopen = () => {
-          this.reconnectAttempts = 0;
 
-          this.emit("connected", null);
+        const socket =
+          new WebSocket(
+            this.url,
+          );
 
-          resolve();
-        };
 
-        this.socket.onmessage = (event) => {
-          this.handleMessage(event.data);
-        };
+        this.socket =
+          socket;
 
-        this.socket.onerror = (error) => {
-          this.emit("error", error);
 
-          reject(error);
-        };
 
-        this.socket.onclose = () => {
-          this.emit("disconnected", null);
+        socket.onopen =
+          () => {
 
-          this.handleReconnect();
-        };
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  send(message: LiveClientMessage) {
-    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      return;
-    }
-
-    this.socket.send(JSON.stringify(message));
-  }
-
-  sendAudio(audioBase64: string) {
-    this.send({
-      realtimeInput: {
-        mediaChunks: [
-          {
-            mimeType: "audio/pcm",
-            data: audioBase64,
-          },
-        ],
-      },
-    });
-  }
-
-  interrupt() {
-    this.send({
-      realtimeInput: {
-        activityStart: {},
-      },
-    });
-  }
-
-  disconnect() {
-    this.socket?.close();
-
-    this.socket = null;
-  }
-
-  on(
-    event: string,
-    callback: (data: unknown) => void,
-  ) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
-    }
-
-    this.listeners
-      .get(event)!
-      .add(callback);
-  }
-
-  off(
-    event: string,
-    callback: (data: unknown) => void,
-  ) {
-    this.listeners
-      .get(event)
-      ?.delete(callback);
-  }
-
-  private emit(event: string, data: unknown) {
-    this.listeners
-      .get(event)
-      ?.forEach((callback) => {
-        callback(data);
-      });
-  }
-
-  private handleMessage(data: string | ArrayBuffer) {
-    try {
-      const message: LiveServerMessage =
-        typeof data === "string"
-          ? JSON.parse(data)
-          : JSON.parse(
-              new TextDecoder().decode(data),
+            console.log(
+              "Gemini Live connected",
             );
 
-      this.emit("message", message);
 
-      if (message.serverContent?.audio) {
-        this.emit(
-          "audio",
-          message.serverContent.audio,
-        );
-      }
+            this.callbacks.onOpen?.();
 
-      if (
-        message.serverContent?.interrupted
-      ) {
-        this.emit("interrupted", null);
-      }
-    } catch (error) {
-      this.emit("error", error);
-    }
+
+            resolve();
+
+          };
+
+
+
+        socket.onmessage =
+          (
+            event,
+          ) => {
+
+
+            let data:
+              GeminiMessage;
+
+
+            try {
+
+              data =
+                JSON.parse(
+                  event.data as string,
+                ) as GeminiMessage;
+
+
+            } catch {
+
+              this.callbacks.onMessage?.(
+                event.data,
+              );
+
+              return;
+
+            }
+
+
+
+            this.callbacks.onMessage?.(
+              data,
+            );
+
+
+
+            if (
+              data.setupComplete
+            ) {
+
+              this.callbacks
+                .onSetupComplete
+                ?.();
+
+            }
+
+
+
+            if (
+              data.serverContent
+                ?.interrupted
+            ) {
+
+              this.callbacks
+                .onInterrupted
+                ?.();
+
+            }
+
+
+
+            const parts =
+              data
+                .serverContent
+                ?.modelTurn
+                ?.parts;
+
+
+
+            if (
+              parts
+            ) {
+
+
+              parts.forEach(
+                (
+                  part: GeminiPart,
+                ) => {
+
+
+                  if (
+                    part.text
+                  ) {
+
+                    this.callbacks
+                      .onText
+                      ?.(
+                        part.text,
+                      );
+
+                  }
+
+
+
+                  if (
+                    part.inlineData?.data
+                  ) {
+
+                    this.callbacks
+                      .onAudio
+                      ?.(
+                        part.inlineData.data,
+
+                        part.inlineData.mimeType ??
+                        "audio/pcm;rate=24000",
+                      );
+
+                  }
+
+
+                },
+              );
+
+            }
+
+
+
+            if (
+              data.serverContent
+                ?.turnComplete
+            ) {
+
+              this.callbacks
+                .onTurnComplete
+                ?.();
+
+            }
+
+
+          };
+
+
+
+        socket.onerror =
+          (
+            error,
+          ) => {
+
+            this.callbacks
+              .onError
+              ?.(
+                error,
+              );
+
+
+            reject(error);
+
+          };
+
+
+
+        socket.onclose =
+  (
+    event,
+  ) => {
+
+    console.log(
+      "WebSocket closed",
+      {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      },
+    );
+
+
+            this.callbacks
+              .onClose
+              ?.(
+                event,
+              );
+
+          };
+
+
+      },
+    );
+
   }
 
-  private async handleReconnect() {
+
+
+
+
+  sendAudio(
+    data: string,
+    mimeType =
+      "audio/pcm;rate=16000",
+  ) {
+
     if (
-      this.reconnectAttempts >=
-      this.maxReconnectAttempts
+      !this.socket ||
+      this.socket.readyState !==
+      WebSocket.OPEN
     ) {
       return;
     }
 
-    this.reconnectAttempts++;
 
-    const delay =
-      1000 *
-      Math.pow(
-        2,
-        this.reconnectAttempts,
-      );
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, delay),
+    this.socket.send(
+      JSON.stringify(
+        {
+          realtimeInput: {
+            audio: {
+              data,
+              mimeType,
+            },
+          },
+        },
+      ),
     );
 
-    this.connect().catch(() => {});
   }
+
+
+
+
+
+  sendText(
+    text: string,
+  ) {
+
+    if (
+      !this.socket ||
+      this.socket.readyState !==
+      WebSocket.OPEN
+    ) {
+      return;
+    }
+
+
+
+    this.socket.send(
+      JSON.stringify(
+        {
+          realtimeInput: {
+            text,
+          },
+        },
+      ),
+    );
+
+  }
+
+
+
+
+
+  sendAudioStreamEnd() {
+
+    if (
+      !this.socket ||
+      this.socket.readyState !==
+      WebSocket.OPEN
+    ) {
+      return;
+    }
+
+
+
+    this.socket.send(
+      JSON.stringify(
+        {
+          realtimeInput: {
+            audioStreamEnd: true,
+          },
+        },
+      ),
+    );
+
+  }
+
+
+
+
+
+  interrupt() {
+
+    this.callbacks
+      .onInterrupted
+      ?.();
+
+  }
+
+
+
+
+
+  close() {
+
+    this.socket?.close();
+
+    this.socket =
+      null;
+
+  }
+
 }
