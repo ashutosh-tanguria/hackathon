@@ -13,24 +13,88 @@ import {
 } from "@/components/ui/card";
 
 
-import { generateInsight } from "../actions";
-
+import {
+  generateInsight,
+} from "../actions";
 
 
 
 export async function InsightCard() {
 
 
-  const insight =
-    await generateInsight();
+  let insight = {
+
+    title:
+      "Stay consistent with your learning",
+
+    insight:
+      "Focus on completing your roadmap steps and maintaining regular study sessions.",
+
+    priority:
+      "MEDIUM",
+
+  };
+
+
+
+  try {
+
+
+    const response =
+      await generateInsight();
+
+
+
+    if(response){
+
+      insight = {
+
+        title:
+          response.title ||
+          insight.title,
+
+
+        insight:
+          response.insight ||
+          insight.insight,
+
+
+        priority:
+          response.priority ||
+          insight.priority,
+
+      };
+
+    }
+
+
+
+  } catch(error) {
+
+
+    console.error(
+      "Insight generation failed:",
+      error
+    );
+
+
+  }
+
 
 
 
 
   const priorityStyle =
     insight.priority === "HIGH"
+
       ? "border-red-500/40 text-red-500"
-      : "border-yellow-500/40 text-yellow-500";
+
+      : insight.priority === "MEDIUM"
+
+        ? "border-yellow-500/40 text-yellow-500"
+
+        : "border-green-500/40 text-green-500";
+
 
 
 
@@ -90,20 +154,31 @@ export async function InsightCard() {
 
 
 
+
         <div className="flex items-center gap-3">
 
 
           {
-            insight.priority === "HIGH" ? (
+            insight.priority === "HIGH"
 
-              <AlertCircle className="h-5 w-5"/>
+            ? (
 
-            ) : (
-
-              <Zap className="h-5 w-5"/>
+              <AlertCircle
+                className="h-5 w-5"
+              />
 
             )
+
+            : (
+
+              <Zap
+                className="h-5 w-5"
+              />
+
+            )
+
           }
+
 
 
 
@@ -120,6 +195,7 @@ export async function InsightCard() {
 
 
         </div>
+
 
 
       </CardContent>

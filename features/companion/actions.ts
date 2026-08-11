@@ -1,121 +1,279 @@
 "use server";
 
+
 import { auth } from "@/lib/auth";
 import { gemini } from "@/lib/gemini";
 import { prisma } from "@/lib/prisma";
+
 
 import {
   CompanionResponse,
   companionResponseSchema,
 } from "./schema";
 
-import { COMPANION_SYSTEM_PROMPT } from "./prompts";
+
+import {
+  COMPANION_SYSTEM_PROMPT,
+} from "./prompts";
+
+
+
+
 
 export async function askCompanion(
   message: string
 ): Promise<CompanionResponse> {
-  const session =
-    await auth.api.getSession({
-      headers: await import(
-        "next/headers"
-      ).then(({ headers }) =>
-        headers()
-      ),
-    });
 
-  if (!session) {
-    throw new Error(
-      "Unauthorized"
-    );
-  }
+const fallback: CompanionResponse = {
 
-  const goal =
-    await prisma.goal.findFirst({
-      where: {
-        userId:
-          session.user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        roadmap: {
-          include: {
-            nodes: {
-              orderBy: {
-                position: "asc",
-              },
-            },
-          },
+  reply:
+    "Keep focusing on your learning roadmap. Complete your next planned task and maintain consistency.",
+
+};
+
+
+
+
+  try {
+
+
+    const session =
+      await auth.api.getSession({
+
+        headers:
+          await import(
+            "next/headers"
+          ).then(({ headers }) =>
+            headers()
+          ),
+
+      });
+
+
+
+
+
+    if (!session) {
+
+      throw new Error(
+        "Unauthorized"
+      );
+
+    }
+
+
+
+
+
+
+    const goal =
+      await prisma.goal.findFirst({
+
+        where: {
+
+          userId:
+            session.user.id,
+
         },
-      },
-    });
 
-  const reflection =
-    await prisma.reflectionSession.findFirst({
-      where: {
-        userId:
-          session.user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
 
-  const completed =
-    goal?.roadmap?.nodes.filter(
-      (node) => node.completed
-    ) ?? [];
+        orderBy: {
 
-  const remaining =
-    goal?.roadmap?.nodes.filter(
-      (node) => !node.completed
-    ) ?? [];
+          createdAt:
+            "desc",
 
-  const prompt = `
-Current Goal
+        },
 
-${goal?.title}
 
-Goal Description
+        include: {
 
-${goal?.description}
+          roadmap: {
 
-Completed Topics
+            include: {
 
-${completed
-  .map((n) => n.title)
-  .join(", ")}
+              nodes: {
 
-Remaining Topics
+                orderBy: {
 
-${remaining
-  .map((n) => n.title)
-  .join(", ")}
+                  position:
+                    "asc",
 
-Latest Reflection
+                },
+
+              },
+
+            },
+
+          },
+
+        },
+
+      });
+
+
+
+
+
+
+
+    const reflection =
+      await prisma.reflectionSession.findFirst({
+
+        where: {
+
+          userId:
+            session.user.id,
+
+        },
+
+
+        orderBy: {
+
+          createdAt:
+            "desc",
+
+        },
+
+      });
+
+
+
+
+
+
+
+    const completed =
+      goal?.roadmap?.nodes.filter(
+        (node) =>
+          node.completed
+      ) ?? [];
+
+
+
+
+
+    const remaining =
+      goal?.roadmap?.nodes.filter(
+        (node) =>
+          !node.completed
+      ) ?? [];
+
+
+
+
+
+
+
+
+    const prompt = `
+
+Current Goal:
+
+${goal?.title ?? "No goal created"}
+
+
+
+Goal Description:
+
+${goal?.description ?? "None"}
+
+
+
+Completed Topics:
+
+${
+  completed
+    .map((n) => n.title)
+    .join(", ")
+    || "None"
+}
+
+
+
+Remaining Topics:
+
+${
+  remaining
+    .map((n) => n.title)
+    .join(", ")
+    || "None"
+}
+
+
+
+Latest Reflection:
 
 ${reflection?.summary ?? "No reflection"}
 
-User Message
+
+
+User Message:
 
 ${message}
 
+
+
 Give practical coaching.
-Keep the answer short.
+
+Keep answer short.
+
 Recommend only ONE next action.
+
+Return ONLY valid JSON.
+
 `;
 
-  const result =
-    await gemini.generateContent([
-      COMPANION_SYSTEM_PROMPT,
-      prompt,
-    ]);
 
-  const text =
-    result.response.text();
 
-  return companionResponseSchema.parse(
-    JSON.parse(text)
-  );
+
+
+
+
+    const result =
+      await gemini.generateContent([
+
+        COMPANION_SYSTEM_PROMPT,
+
+        prompt,
+
+      ]);
+
+
+
+
+
+    const text =
+      result.response.text();
+
+
+
+
+
+
+    return companionResponseSchema.parse(
+
+      JSON.parse(text)
+
+    );
+
+
+
+
+
+  } catch(error) {
+
+
+    console.error(
+      "Companion AI failed:",
+      error
+    );
+
+
+
+    return fallback;
+
+
+  }
+
+
 }

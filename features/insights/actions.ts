@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/current-user";
 
 
 import { INSIGHT_SYSTEM_PROMPT } from "./prompts";
+
 import {
   AIInsight,
   insightSchema,
@@ -16,41 +17,65 @@ import {
 
 export async function generateInsight(): Promise<AIInsight> {
 
-  const user =
-    await getCurrentUser();
+
+  const fallback: AIInsight = {
+
+    title:
+      "Keep building consistency",
+
+    insight:
+      "Complete your roadmap tasks and maintain regular study sessions to improve your progress.",
+
+    priority:
+      "MEDIUM",
+
+  };
 
 
-  if (!user) {
-    throw new Error(
-      "Unauthorized"
-    );
-  }
+
+  try {
+
+
+    const user =
+      await getCurrentUser();
 
 
 
-  const [
-    goal,
-    reflections,
-    sessions,
-  ] =
+    if(!user){
+
+      return fallback;
+
+    }
+
+
+
+
+    const [
+      goal,
+      reflections,
+      sessions,
+    ] =
     await Promise.all([
+
 
       prisma.goal.findFirst({
 
-        where: {
-          userId: user.id,
+        where:{
+          userId:user.id,
         },
 
-        orderBy: {
-          createdAt: "desc",
+
+        orderBy:{
+          createdAt:"desc",
         },
 
-        include: {
 
-          roadmap: {
+        include:{
 
-            include: {
-              nodes: true,
+          roadmap:{
+
+            include:{
+              nodes:true,
             },
 
           },
@@ -61,143 +86,160 @@ export async function generateInsight(): Promise<AIInsight> {
 
 
 
+
       prisma.reflectionSession.findMany({
 
-        where: {
-          userId: user.id,
+        where:{
+          userId:user.id,
         },
 
-        orderBy: {
-          createdAt: "desc",
+
+        orderBy:{
+          createdAt:"desc",
         },
 
-        take: 3,
+
+        take:3,
 
       }),
+
 
 
 
       prisma.learningSession.findMany({
 
-        where: {
-          userId: user.id,
+        where:{
+          userId:user.id,
         },
 
-        orderBy: {
-          createdAt: "desc",
+
+        orderBy:{
+          createdAt:"desc",
         },
 
-        take: 5,
+
+        take:5,
 
       }),
+
 
     ]);
 
 
 
-  const completed =
-    goal?.roadmap?.nodes.filter(
-      (node) =>
-        node.completed
-    ).length ?? 0;
 
 
 
-  const total =
-    goal?.roadmap?.nodes.length ?? 0;
+    const completed =
+      goal?.roadmap?.nodes.filter(
+        node=>node.completed
+      ).length ?? 0;
 
 
 
-  const nextNode =
-    goal?.roadmap?.nodes.find(
-      (node) =>
-        !node.completed
-    );
+    const total =
+      goal?.roadmap?.nodes.length ?? 0;
 
 
 
-  const reflectionContext =
-    reflections
+    const nextNode =
+      goal?.roadmap?.nodes.find(
+        node=>!node.completed
+      );
+
+
+
+
+
+    const reflectionContext =
+      reflections
       .map(
-        (reflection) =>
-          reflection.summary
+        reflection=>reflection.summary
       )
       .filter(Boolean)
       .join("\n");
 
 
 
-  const sessionCount =
-    sessions.length;
 
 
 
-  const prompt = `
+    const prompt = `
 
 Student Learning Context:
 
-
-Current Goal:
-
-${goal?.title ?? "No goal created"}
-
+Goal:
+${goal?.title ?? "No goal"}
 
 Category:
-
 ${goal?.category ?? "Unknown"}
 
-
-Roadmap Progress:
-
+Roadmap:
 ${completed}/${total} completed
 
-
-Next Learning Task:
-
-${nextNode?.title ?? "No pending task"}
-
+Next Task:
+${nextNode?.title ?? "None"}
 
 Recent Reflections:
+${reflectionContext || "None"}
 
-${reflectionContext || "No reflections yet"}
-
-
-Recent Study Sessions:
-
-${sessionCount}
+Study Sessions:
+${sessions.length}
 
 
 
 Generate one personalized insight.
 
-Focus on:
+Focus:
 - Progress
 - Weak areas
 - Consistency
-- Next practical action
+- Next action
+
+Return ONLY valid JSON.
 
 `;
 
 
 
-  const result =
-    await gemini.generateContent([
-
-      INSIGHT_SYSTEM_PROMPT,
-
-      prompt,
-
-    ]);
 
 
+    const result =
+      await gemini.generateContent([
 
-  const text =
-    result.response.text();
+        INSIGHT_SYSTEM_PROMPT,
+
+        prompt,
+
+      ]);
 
 
 
-  return insightSchema.parse(
-    JSON.parse(text)
-  );
+
+    const text =
+      result.response.text();
+
+
+
+    return insightSchema.parse(
+      JSON.parse(text)
+    );
+
+
+
+  } catch(error){
+
+
+    console.error(
+      "Insight generation failed:",
+      error
+    );
+
+
+    return fallback;
+
+
+  }
+
 
 }

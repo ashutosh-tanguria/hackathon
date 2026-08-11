@@ -1,11 +1,24 @@
 "use server";
 
+
 import { gemini } from "@/lib/gemini";
 
-import { assessmentSchema } from "./schema";
-import { SYSTEM_PROMPT } from "./prompts";
+import {
+  assessmentSchema,
+} from "./schema";
 
-import { prisma } from "@/lib/prisma";
+
+import {
+  SYSTEM_PROMPT,
+} from "./prompts";
+
+
+import {
+  prisma,
+} from "@/lib/prisma";
+
+
+
 
 
 export async function evaluateAssessment(
@@ -16,36 +29,77 @@ export async function evaluateAssessment(
 ) {
 
 
-  const validated =
-    assessmentSchema.parse({
-      answers: data.answers,
-    });
+  const fallback = {
 
+    level:
+      "Beginner",
 
+    strengths: [
+      "You have started evaluating your learning path.",
+    ],
 
-  const goal =
-    await prisma.goal.findUnique({
+    weaknesses: [
+      "Continue building practical foundations.",
+    ],
 
-      where: {
-        id: data.goalId,
-      },
+    recommendations: [
+      "Follow your personalized roadmap consistently.",
+    ],
 
-    });
-
-
-
-  if (!goal) {
-
-    throw new Error(
-      "Goal not found"
-    );
-
-  }
+  };
 
 
 
 
-  const prompt = `
+
+  try {
+
+
+
+    const validated =
+      assessmentSchema.parse({
+
+        answers:
+          data.answers,
+
+      });
+
+
+
+
+
+
+    const goal =
+      await prisma.goal.findUnique({
+
+        where: {
+
+          id:
+            data.goalId,
+
+        },
+
+      });
+
+
+
+
+
+
+    if (!goal) {
+
+      throw new Error(
+        "Goal not found"
+      );
+
+    }
+
+
+
+
+
+
+    const prompt = `
 
 Student Goal:
 
@@ -76,7 +130,8 @@ Evaluate the student specifically for this goal.
 
 
 Consider:
-- Current understanding of this domain
+
+- Current understanding
 - Practical ability
 - Missing foundations
 - Next learning requirements
@@ -88,24 +143,50 @@ Return ONLY valid JSON.
 
 
 
-  const result =
-    await gemini.generateContent([
-
-      SYSTEM_PROMPT,
-
-      prompt,
-
-    ]);
 
 
 
-  const response =
-    result.response.text();
+    const result =
+      await gemini.generateContent([
+
+        SYSTEM_PROMPT,
+
+        prompt,
+
+      ]);
 
 
 
-  return JSON.parse(
-    response
-  );
+
+
+    const response =
+      result.response.text();
+
+
+
+
+
+    return JSON.parse(
+      response
+    );
+
+
+
+
+
+  } catch(error) {
+
+
+    console.error(
+      "Assessment evaluation failed:",
+      error
+    );
+
+
+
+    return fallback;
+
+
+  }
 
 }

@@ -14,11 +14,8 @@ if(!apiKey){
 }
 
 
-
 const genAI =
-  new GoogleGenerativeAI(
-    apiKey,
-  );
+  new GoogleGenerativeAI(apiKey);
 
 
 
@@ -32,13 +29,14 @@ const model =
 
 
 
-
-
 export async function generateVoiceSummary(
   transcript:string,
 ){
 
-  const prompt = `
+  try {
+
+
+    const prompt = `
 
 Summarize this AI mentor conversation.
 
@@ -54,12 +52,30 @@ Return only the summary text.
 
 
 
-  const result =
-    await model.generateContent(
-      prompt,
+    const result =
+      await model.generateContent(
+        prompt
+      );
+
+
+    return result.response.text();
+
+
+
+  } catch(error){
+
+
+    console.error(
+      "Voice summary failed:",
+      error
     );
 
 
-  return result.response.text();
+    return (
+      "AI mentor conversation completed. Student discussed learning topics and received guidance."
+    );
+
+
+  }
 
 }

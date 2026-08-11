@@ -1,145 +1,149 @@
 import {
-  Settings,
-  User,
-  Shield,
-  Palette,
-  LogOut,
+Settings,
+User,
+Shield,
+Palette,
 } from "lucide-react";
 
 
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+Card,
+CardContent,
+CardHeader,
+CardTitle,
 } from "@/components/ui/card";
 
 
-import { Button } from "@/components/ui/button";
+import {
+getCurrentUser,
+} from "@/lib/current-user";
 
-import { getCurrentUser } from "@/lib/current-user";
+
+import {
+ProfileSettings,
+} from "@/features/settings/components/profile-settings";
+
+
+import {
+LogoutButton,
+} from "@/features/settings/components/logout-button";
+
 
 
 
 export default async function SettingsPage(){
 
 
-  const user =
-    await getCurrentUser();
+const user =
+await getCurrentUser();
 
 
 
-  if(!user){
+if(!user){
 
-    return (
-      <div>
-        Unauthorized
-      </div>
-    );
+return (
 
-  }
+<div>
+Unauthorized
+</div>
 
+);
 
+}
 
 
 
-  return (
 
-    <main className="space-y-8">
+return (
 
+<main className="space-y-8">
 
 
-      <section>
 
+<section>
 
-        <div className="flex items-center gap-3">
 
-          <Settings
-            className="h-8 w-8"
-          />
+<div className="flex items-center gap-3">
 
 
-          <h1 className="text-4xl font-bold">
-            Settings
-          </h1>
+<Settings
+className="h-8 w-8"
+/>
 
 
-        </div>
+<h1 className="text-4xl font-bold">
+Settings
+</h1>
 
 
-        <p className="mt-2 text-muted-foreground">
-          Manage your StudyOS preferences.
-        </p>
+</div>
 
 
-      </section>
+<p className="mt-2 text-muted-foreground">
 
+Manage your StudyOS preferences.
 
+</p>
 
 
+</section>
 
 
 
-      <section className="grid gap-6 md:grid-cols-2">
 
 
 
-        <Card>
 
+<section className="grid gap-6 md:grid-cols-2">
 
-          <CardHeader>
 
 
-            <CardTitle className="flex items-center gap-2">
 
-              <User className="h-5 w-5"/>
 
-              Account
+<Card>
 
-            </CardTitle>
 
+<CardHeader>
 
-          </CardHeader>
 
+<CardTitle className="flex items-center gap-2">
 
 
-          <CardContent className="space-y-3">
+<User
+className="h-5 w-5"
+/>
 
 
-            <div>
+Account
 
-              <p className="text-sm text-muted-foreground">
-                Name
-              </p>
 
+</CardTitle>
 
-              <p className="font-medium">
-                {user.name ?? "Student"}
-              </p>
 
-            </div>
+</CardHeader>
 
 
 
+<CardContent>
 
-            <div>
 
-              <p className="text-sm text-muted-foreground">
-                Email
-              </p>
+<ProfileSettings
 
+name={
+user.name ?? "Student"
+}
 
-              <p className="font-medium">
-                {user.email}
-              </p>
+email={
+user.email
+}
 
-            </div>
+/>
 
 
-          </CardContent>
+</CardContent>
 
 
-        </Card>
+</Card>
 
 
 
@@ -147,43 +151,44 @@ export default async function SettingsPage(){
 
 
 
+<Card>
 
-        <Card>
 
+<CardHeader>
 
-          <CardHeader>
 
+<CardTitle className="flex items-center gap-2">
 
-            <CardTitle className="flex items-center gap-2">
 
-              <Palette className="h-5 w-5"/>
+<Palette
+className="h-5 w-5"
+/>
 
-              Appearance
 
-            </CardTitle>
+Appearance
 
 
-          </CardHeader>
+</CardTitle>
 
 
+</CardHeader>
 
-          <CardContent>
 
 
-            <p className="text-muted-foreground">
+<CardContent>
 
-              Theme customization is available through your
-              dashboard preferences.
 
-            </p>
+<p className="text-muted-foreground">
 
+Theme customization will be available soon.
 
+</p>
 
-          </CardContent>
 
+</CardContent>
 
-        </Card>
 
+</Card>
 
 
 
@@ -191,92 +196,91 @@ export default async function SettingsPage(){
 
 
 
-        <Card>
 
+<Card>
 
-          <CardHeader>
 
+<CardHeader>
 
-            <CardTitle className="flex items-center gap-2">
 
-              <Shield className="h-5 w-5"/>
+<CardTitle className="flex items-center gap-2">
 
-              Privacy
 
-            </CardTitle>
+<Shield
+className="h-5 w-5"
+/>
 
 
-          </CardHeader>
+Privacy
 
 
+</CardTitle>
 
-          <CardContent>
 
+</CardHeader>
 
-            <p className="text-muted-foreground">
 
-              Your learning data is securely stored and used
-              only for personalized AI recommendations.
 
-            </p>
+<CardContent>
 
 
-          </CardContent>
+<p className="text-muted-foreground">
 
+Your learning data is securely stored and used
+for personalized AI recommendations.
 
-        </Card>
+</p>
 
 
+</CardContent>
 
 
+</Card>
 
 
 
 
-        <Card>
 
 
-          <CardHeader>
 
 
-            <CardTitle className="flex items-center gap-2">
+<Card>
 
-              <LogOut className="h-5 w-5"/>
 
-              Session
+<CardHeader>
 
-            </CardTitle>
 
+<CardTitle>
 
-          </CardHeader>
+Session
 
+</CardTitle>
 
 
-          <CardContent>
+</CardHeader>
 
 
-            <Button
-              variant="outline"
-              disabled
-            >
 
-              Logout
+<CardContent>
 
-            </Button>
 
+<LogoutButton />
 
-          </CardContent>
 
+</CardContent>
 
-        </Card>
 
+</Card>
 
 
-      </section>
 
 
-    </main>
+</section>
 
-  );
+
+
+</main>
+
+);
 
 }
