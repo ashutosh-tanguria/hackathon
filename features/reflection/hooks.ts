@@ -1,59 +1,46 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 
-import { ReflectionService } from "./service";
-import { AIReflection } from "./schema";
+import {
+  analyzeReflection,
+  getReflections,
+} from "./actions";
+
 
 export function useReflection() {
-  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (
-      reflection: string
-    ) => {
-      const result =
-        await ReflectionService.analyzeReflection(
-          reflection
-        );
 
-      await ReflectionService.saveReflection(
-        result
-      );
-
-      await queryClient.invalidateQueries({
-        queryKey: ["reflections"],
-      });
-
-      return result;
-    },
-  });
-}
-
-export function useSaveReflection() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
     mutationFn: (
-      reflection: AIReflection
+      data: {
+        goalId: string;
+        reflection: string;
+      }
     ) =>
-      ReflectionService.saveReflection(
-        reflection
+      analyzeReflection(
+        data
       ),
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["reflections"],
-      });
-    },
   });
+
 }
 
-export function useReflections() {
-  return useQuery({
-    queryKey: ["reflections"],
 
-    queryFn: () =>
-      ReflectionService.getReflections(),
+export function useReflections() {
+
+  return useQuery({
+
+    queryKey: [
+      "reflections",
+    ],
+
+    queryFn:
+      getReflections,
+
   });
+
 }

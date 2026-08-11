@@ -1,10 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  Clock,
+  Play,
+  Pause,
+  Square,
+} from "lucide-react";
+
+
+import {
+  useState,
+} from "react";
+
+
+import {
+  toast,
+} from "sonner";
+
+
+import {
+  Button,
+} from "@/components/ui/button";
+
+
+import {
+  Input,
+} from "@/components/ui/input";
+
 
 import {
   useActiveLearningSession,
@@ -14,190 +37,381 @@ import {
   useEndLearningSession,
 } from "../hooks";
 
-import { SessionTimer } from "./session-timer";
 
-export function SessionCard() {
-  const {
-    data: session,
-    isLoading,
-  } = useActiveLearningSession();
+import {
+  SessionTimer,
+} from "./session-timer";
 
-  const start =
-    useStartLearningSession();
 
-  const pause =
-    usePauseLearningSession();
 
-  const resume =
-    useResumeLearningSession();
 
-  const end =
-    useEndLearningSession();
 
-  const [title, setTitle] =
-    useState("");
+export function SessionCard(){
 
-  async function handleStart() {
-    if (!title.trim()) {
-      toast.error(
-        "Enter a session title."
-      );
-      return;
-    }
 
-    try {
-      await start.mutateAsync(title);
+const {
+ data:session,
+ isLoading,
+}=useActiveLearningSession();
 
-      toast.success(
-        "Study session started."
-      );
 
-      setTitle("");
-    } catch {
-      toast.error(
-        "Failed to start session."
-      );
-    }
-  }
 
-  async function handlePause() {
-    if (!session) return;
+const start =
+useStartLearningSession();
 
-    await pause.mutateAsync(
-      session.id
-    );
 
-    toast.success(
-      "Session paused."
-    );
-  }
 
-  async function handleResume() {
-    if (!session) return;
+const pause =
+usePauseLearningSession();
 
-    await resume.mutateAsync(
-      session.id
-    );
 
-    toast.success(
-      "Session resumed."
-    );
-  }
 
-  async function handleEnd() {
-    if (!session) return;
+const resume =
+useResumeLearningSession();
 
-    await end.mutateAsync(
-      session.id
-    );
 
-    toast.success(
-      "Session completed."
-    );
-  }
 
-  if (isLoading) {
-    return (
-      <div className="rounded-xl border p-6">
-        Loading...
-      </div>
-    );
-  }
+const end =
+useEndLearningSession();
 
-  return (
-    <div className="space-y-6 rounded-xl border p-6">
 
-      <h2 className="text-2xl font-bold">
-        Study Session
-      </h2>
 
-      {!session && (
-        <>
-          <Input
-            placeholder="Session title"
-            value={title}
-            onChange={(e) =>
-              setTitle(e.target.value)
-            }
-          />
 
-          <Button
-            className="w-full"
-            onClick={handleStart}
-            disabled={
-              start.isPending
-            }
-          >
-            {start.isPending
-              ? "Starting..."
-              : "Start Session"}
-          </Button>
-        </>
-      )}
+const [title,setTitle] =
+useState("");
 
-      {session && (
-        <>
-          <div>
 
-            <h3 className="text-lg font-semibold">
-              {session.title}
-            </h3>
 
-            <p className="text-sm text-muted-foreground">
-              Status:
-              {" "}
-              {session.status}
-            </p>
 
-          </div>
 
-          <SessionTimer
-            startedAt={
-              session.startedAt
-            }
-            isRunning={
-              session.status ===
-              "ACTIVE"
-            }
-          />
+async function handleStart(){
 
-          <div className="grid grid-cols-3 gap-3">
 
-            {session.status ===
-              "ACTIVE" && (
-              <Button
-                onClick={
-                  handlePause
-                }
-              >
-                Pause
-              </Button>
-            )}
+if(!title.trim()){
 
-            {session.status ===
-              "PAUSED" && (
-              <Button
-                onClick={
-                  handleResume
-                }
-              >
-                Resume
-              </Button>
-            )}
+toast.error(
+"Enter session title"
+);
 
-            <Button
-              variant="destructive"
-              onClick={
-                handleEnd
-              }
-            >
-              End
-            </Button>
+return;
 
-          </div>
-        </>
-      )}
+}
 
-    </div>
-  );
+
+
+try{
+
+await start.mutateAsync(title);
+
+toast.success(
+"Study session started"
+);
+
+setTitle("");
+
+}catch{
+
+toast.error(
+"Failed to start session"
+);
+
+}
+
+
+}
+
+
+
+
+
+
+async function handlePause(){
+
+if(!session)
+return;
+
+
+await pause.mutateAsync(
+session.id
+);
+
+
+toast.success(
+"Session paused"
+);
+
+}
+
+
+
+
+
+
+
+async function handleResume(){
+
+if(!session)
+return;
+
+
+await resume.mutateAsync(
+session.id
+);
+
+
+toast.success(
+"Session resumed"
+);
+
+}
+
+
+
+
+
+
+
+async function handleEnd(){
+
+if(!session)
+return;
+
+
+await end.mutateAsync(
+session.id
+);
+
+
+toast.success(
+"Session completed"
+);
+
+}
+
+
+
+
+
+
+if(isLoading){
+
+return (
+
+<div className="rounded-xl border p-6">
+
+Loading...
+
+</div>
+
+);
+
+}
+
+
+
+
+
+
+return (
+
+<div className="space-y-6 rounded-2xl border p-6">
+
+
+<div className="flex items-center gap-3">
+
+
+<Clock
+className="h-7 w-7"
+/>
+
+
+<h2 className="text-2xl font-bold">
+
+Study Session
+
+</h2>
+
+
+</div>
+
+
+
+
+
+{
+!session && (
+
+<div className="space-y-4">
+
+
+<Input
+
+placeholder="What are you studying?"
+
+value={title}
+
+onChange={(e)=>
+setTitle(e.target.value)
+}
+
+/>
+
+
+<Button
+
+className="w-full"
+
+onClick={handleStart}
+
+disabled={
+start.isPending
+}
+
+>
+
+<Play className="mr-2 h-4 w-4"/>
+
+
+{
+start.isPending
+?"Starting..."
+:"Start Focus Session"
+}
+
+
+</Button>
+
+
+</div>
+
+)
+}
+
+
+
+
+
+
+{
+session && (
+
+<>
+
+
+<div className="rounded-xl bg-muted p-4">
+
+
+<h3 className="font-semibold">
+
+{session.title}
+
+</h3>
+
+
+<p className="mt-1 text-sm text-muted-foreground">
+
+Status: {session.status}
+
+</p>
+
+
+</div>
+
+
+
+
+<SessionTimer
+
+startedAt={
+session.startedAt
+}
+
+isRunning={
+session.status==="ACTIVE"
+}
+
+/>
+
+
+
+
+
+<div className="flex gap-3">
+
+
+{
+session.status==="ACTIVE" && (
+
+<Button
+className="flex-1"
+onClick={handlePause}
+>
+
+<Pause className="mr-2 h-4 w-4"/>
+
+Pause
+
+</Button>
+
+)
+}
+
+
+
+
+
+{
+session.status==="PAUSED" && (
+
+<Button
+className="flex-1"
+onClick={handleResume}
+>
+
+<Play className="mr-2 h-4 w-4"/>
+
+Resume
+
+</Button>
+
+)
+
+}
+
+
+
+
+<Button
+
+variant="destructive"
+
+className="flex-1"
+
+onClick={handleEnd}
+
+>
+
+<Square className="mr-2 h-4 w-4"/>
+
+End
+
+</Button>
+
+
+</div>
+
+
+
+</>
+
+)
+}
+
+
+
+</div>
+
+);
+
+
 }

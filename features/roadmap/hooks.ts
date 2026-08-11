@@ -7,9 +7,12 @@ import { AIRoadmap } from "./schema";
 
 export function useGenerateRoadmap() {
   return useMutation({
-    mutationFn: (assessment: unknown) =>
+    mutationFn: (input: {
+      goalId: string;
+      assessment: unknown;
+    }) =>
       RoadmapService.generateRoadmap(
-        assessment
+        input
       ),
   });
 }

@@ -1,7 +1,15 @@
-import Link from "next/link";
+import {
+  Clock,
+  Brain,
+  Target,
+  Flame,
+  Sparkles,
+} from "lucide-react";
+
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
+
 
 import {
   Card,
@@ -10,259 +18,371 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { InsightCard } from "@/features/insights/components/insight-card";
 
-export default async function AnalyticsPage() {
-  const user = await getCurrentUser();
 
-  if (!user) {
-    return <div>Unauthorized</div>;
-  }
 
-  const roadmap =
-    await prisma.roadmap.findFirst({
-      where: {
-        goal: {
-          userId: user.id,
-        },
-      },
+export default async function AnalyticsPage(){
 
-      include: {
-        goal: true,
 
-        nodes: true,
-      },
+  const user =
+    await getCurrentUser();
 
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
 
-  const reflectionCount =
-    await prisma.reflectionSession.count({
-      where: {
-        userId: user.id,
-      },
-    });
 
-  const sessionCount =
-    await prisma.learningSession.count({
-      where: {
-        userId: user.id,
-      },
-    });
+  if(!user){
 
-  const sessions =
-    await prisma.learningSession.findMany({
-      where: {
-        userId: user.id,
-        status: "COMPLETED",
-      },
-    });
-
-  const totalStudyMinutes =
-    sessions.reduce(
-      (sum, session) =>
-        sum + (session.duration ?? 0),
-      0
+    return (
+      <div>
+        Unauthorized
+      </div>
     );
 
-  const averageDuration =
-    sessionCount === 0
-      ? 0
-      : Math.round(
-          totalStudyMinutes /
-            sessionCount
-        );
+  }
 
-  const completed =
-    roadmap?.nodes.filter(
-      (node) => node.completed
-    ).length ?? 0;
 
-  const total =
-    roadmap?.nodes.length ?? 0;
 
-  const progress =
-    total === 0
-      ? 0
-      : Math.round(
-          (completed / total) * 100
-        );
+
+
+  const [
+
+    sessions,
+
+    reflections,
+
+    completedNodes,
+
+    totalMinutes,
+
+  ] =
+  await Promise.all([
+
+
+
+    prisma.learningSession.count({
+
+      where:{
+        userId:user.id,
+      },
+
+    }),
+
+
+
+
+    prisma.reflectionSession.count({
+
+      where:{
+        userId:user.id,
+      },
+
+    }),
+
+
+
+
+
+    prisma.roadmapNode.count({
+
+      where:{
+        completed:true,
+
+      },
+
+    }),
+
+
+
+
+
+    prisma.learningSession.findMany({
+
+      where:{
+
+        userId:user.id,
+
+        status:"COMPLETED",
+
+      },
+
+
+      select:{
+
+        duration:true,
+
+      },
+
+    }),
+
+
+
+  ]);
+
+
+
+
+
+  const studyMinutes =
+    totalMinutes.reduce(
+      (sum,item)=>
+        sum + (item.duration ?? 0),
+      0,
+    );
+
+
+
+
+
+
 
   return (
-    <main className="space-y-8">
 
-      <div>
-        <h1 className="text-4xl font-bold">
-          Analytics
-        </h1>
+    <main className="space-y-10">
+
+
+      <section>
+
+
+        <div className="flex items-center gap-3">
+
+          <Sparkles
+            className="h-8 w-8"
+          />
+
+          <h1 className="text-4xl font-bold">
+            Learning Analytics
+          </h1>
+
+
+        </div>
+
 
         <p className="mt-2 text-muted-foreground">
-          Monitor your learning progress.
+
+          Track your progress and learning consistency.
+
         </p>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Roadmap Progress
-            </CardTitle>
-          </CardHeader>
+      </section>
 
-          <CardContent>
 
-            <Progress value={progress} />
 
-            <p className="mt-4 text-sm">
-              {completed} / {total} completed
-            </p>
 
-          </CardContent>
-        </Card>
+
+
+
+      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+
 
         <Card>
+
           <CardHeader>
-            <CardTitle>
-              Study Sessions
-            </CardTitle>
-          </CardHeader>
 
-          <CardContent>
+            <CardTitle className="flex gap-2 items-center">
 
-            <p className="text-4xl font-bold">
-              {sessionCount}
-            </p>
+              <Clock className="h-5 w-5"/>
 
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>
               Study Time
+
             </CardTitle>
+
           </CardHeader>
+
 
           <CardContent>
 
             <p className="text-4xl font-bold">
-              {totalStudyMinutes}
+
+              {studyMinutes}
+
             </p>
+
 
             <p className="text-sm text-muted-foreground">
-              minutes
+              Minutes completed
             </p>
 
+
           </CardContent>
+
+
         </Card>
 
+
+
+
+
+
+
         <Card>
+
           <CardHeader>
-            <CardTitle>
-              Reflections
+
+            <CardTitle className="flex gap-2 items-center">
+
+              <Brain className="h-5 w-5"/>
+
+              Sessions
+
             </CardTitle>
+
+
           </CardHeader>
+
 
           <CardContent>
 
             <p className="text-4xl font-bold">
-              {reflectionCount}
+
+              {sessions}
+
             </p>
 
+
+            <p className="text-sm text-muted-foreground">
+              Learning sessions
+            </p>
+
+
           </CardContent>
+
+
         </Card>
 
-      </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+
+
+
+
+
 
         <Card>
 
           <CardHeader>
-            <CardTitle>
-              Current Goal
+
+            <CardTitle className="flex gap-2 items-center">
+
+              <Target className="h-5 w-5"/>
+
+              Milestones
+
             </CardTitle>
+
+
           </CardHeader>
+
 
           <CardContent>
 
-            <h2 className="text-xl font-semibold">
-              {roadmap?.goal.title ??
-                "No Goal"}
-            </h2>
+            <p className="text-4xl font-bold">
 
-            <p className="mt-2 text-muted-foreground">
-              {roadmap?.goal
-                .description ??
-                "Create a goal to start learning."}
+              {completedNodes}
+
             </p>
+
+
+            <p className="text-sm text-muted-foreground">
+              Roadmap steps done
+            </p>
+
 
           </CardContent>
 
+
         </Card>
+
+
+
+
+
+
 
         <Card>
 
           <CardHeader>
-            <CardTitle>
-              Session Statistics
+
+            <CardTitle className="flex gap-2 items-center">
+
+              <Flame className="h-5 w-5"/>
+
+              Reflections
+
             </CardTitle>
+
+
           </CardHeader>
 
-          <CardContent className="space-y-4">
 
-            <div className="flex justify-between">
+          <CardContent>
 
-              <span>
-                Average Session
-              </span>
+            <p className="text-4xl font-bold">
 
-              <span className="font-semibold">
-                {averageDuration} min
-              </span>
+              {reflections}
 
-            </div>
+            </p>
 
-            <div className="flex justify-between">
 
-              <span>
-                Total Study Time
-              </span>
+            <p className="text-sm text-muted-foreground">
+              AI reflections
+            </p>
 
-              <span className="font-semibold">
-                {totalStudyMinutes} min
-              </span>
-
-            </div>
-
-            <div className="flex justify-between">
-
-              <span>
-                Reflection Entries
-              </span>
-
-              <span className="font-semibold">
-                {reflectionCount}
-              </span>
-
-            </div>
 
           </CardContent>
 
+
         </Card>
 
-      </div>
 
-      <Link href="/roadmap">
-        <Button>
-          Continue Learning
-        </Button>
-      </Link>
+
+      </section>
+
+
+
+
+
+
+      <InsightCard />
+
+
+
+
+      <Card>
+
+
+        <CardHeader>
+
+          <CardTitle>
+            Learning Summary
+          </CardTitle>
+
+
+        </CardHeader>
+
+
+        <CardContent>
+
+
+          <p className="leading-7 text-muted-foreground">
+
+            StudyOS continuously analyzes your goals,
+            roadmap completion, study sessions and reflections
+            to provide personalized learning guidance.
+
+          </p>
+
+
+        </CardContent>
+
+
+      </Card>
+
+
+
 
     </main>
+
   );
+
 }

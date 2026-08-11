@@ -11,7 +11,10 @@ import {
 } from "./schema";
 
 export async function analyzeReflection(
-  reflection: string
+data: {
+  goalId: string;
+  reflection: string;
+}
 ) {
   const user = await getCurrentUser();
 
@@ -19,12 +22,46 @@ export async function analyzeReflection(
     throw new Error("Unauthorized");
   }
 
-  const prompt = `
+  const goal =
+await prisma.goal.findUnique({
+  where: {
+    id: data.goalId,
+  },
+});
+
+
+if (!goal) {
+  throw new Error(
+    "Goal not found"
+  );
+}
+
+
+const prompt = `
+Student Goal:
+
+Title:
+${goal.title}
+
+Category:
+${goal.category}
+
+Description:
+${goal.description ?? "None"}
+
+
 Student Reflection:
 
-${reflection}
+${data.reflection}
 
-Analyze this reflection.
+
+Analyze this reflection according to the student's goal.
+
+Identify:
+- Progress
+- Strengths
+- Weak areas
+- Practical next action
 `;
 
   const result =

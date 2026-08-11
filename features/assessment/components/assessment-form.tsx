@@ -17,33 +17,37 @@ import {
 const QUESTIONS = [
   {
     id: 1,
-    question: "How would you rate your knowledge of this topic?",
+    question:
+      "What is your current experience level with this goal?",
     options: [
-      "Never studied",
-      "Basic",
+      "Complete beginner",
+      "Basic understanding",
       "Intermediate",
       "Advanced",
     ],
   },
+
   {
     id: 2,
-    question: "Can you solve problems without help?",
+    question:
+      "How comfortable are you applying this knowledge practically?",
     options: [
-      "No",
-      "Sometimes",
-      "Mostly",
-      "Yes",
+      "I need guidance",
+      "I can do basic tasks",
+      "I can solve problems independently",
+      "I can build advanced solutions",
     ],
   },
+
   {
     id: 3,
     question:
-      "Have you built any real projects in this domain?",
+      "What best describes your previous practice in this domain?",
     options: [
-      "No",
-      "Small projects",
-      "Several projects",
-      "Production-level projects",
+      "No practical experience",
+      "Small practice attempts",
+      "Multiple projects/practice",
+      "Real-world experience",
     ],
   },
 ];
@@ -74,39 +78,49 @@ export function AssessmentForm({
   const [result, setResult] =
     useState<AIResult | null>(null);
 
-  async function handleSubmit() {
-    if (
-      Object.keys(answers).length !==
-      QUESTIONS.length
-    ) {
-      toast.error("Answer all questions.");
-      return;
-    }
-
-    try {
-      const response =
-        await assessment.mutateAsync({
-          answers: Object.entries(
-            answers
-          ).map(([id, answer]) => ({
-            questionId: Number(id),
-            answer,
-          })),
-        });
-
-      setResult(response);
-
-      toast.success(
-        "Assessment completed."
-      );
-    } catch (error) {
-      console.error(error);
-
-      toast.error(
-        "Assessment failed."
-      );
-    }
+async function handleSubmit() {
+  if (!goalId) {
+    toast.error(
+      "Goal not found. Please start assessment from a goal."
+    );
+    return;
   }
+
+  if (
+    Object.keys(answers).length !==
+    QUESTIONS.length
+  ) {
+    toast.error("Answer all questions.");
+    return;
+  }
+
+  try {
+    const response =
+      await assessment.mutateAsync({
+        goalId,
+
+        answers: Object.entries(
+          answers
+        ).map(([id, answer]) => ({
+          questionId: Number(id),
+          answer,
+        })),
+      });
+
+    setResult(response);
+
+    toast.success(
+      "Assessment completed."
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    toast.error(
+      "Assessment failed."
+    );
+  }
+}
 
   async function handleGenerateRoadmap() {
     if (!result) return;
@@ -119,10 +133,15 @@ export function AssessmentForm({
     }
 
     try {
-      const roadmap =
-        await generateRoadmap.mutateAsync(
-          result
-        );
+     const roadmap =
+  await generateRoadmap.mutateAsync({
+
+    goalId,
+
+    assessment:
+      result,
+
+  });
 
       await saveRoadmap.mutateAsync({
         goalId,
