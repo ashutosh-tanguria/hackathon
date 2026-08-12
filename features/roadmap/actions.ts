@@ -12,7 +12,7 @@ import {
   AIRoadmap,
 } from "./schema";
 
-
+import { Difficulty } from "@prisma/client";
 
 export async function generateRoadmap(
   input: {
@@ -144,10 +144,15 @@ export async function saveRoadmap(
 
         create:
           roadmap.nodes.map(
-            (
-              node,
-              index
-            ) => ({
+  (
+    node: {
+      title: string;
+      description: string;
+      week: number;
+      difficulty: Difficulty;
+    },
+    index: number
+  ) => ({
 
               title:
                 node.title,

@@ -154,12 +154,13 @@ export async function generateInsight(): Promise<AIInsight> {
 
 
     const reflectionContext =
-      reflections
-        .map(
-          reflection => reflection.summary
-        )
-        .filter(Boolean)
-        .join("\n");
+  reflections
+    .map(
+      (reflection: { summary: string | null }) =>
+        reflection.summary
+    )
+    .filter(Boolean)
+    .join("\n");
 
 
 
