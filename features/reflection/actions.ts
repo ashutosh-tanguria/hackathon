@@ -143,20 +143,36 @@ Return ONLY valid JSON.
 
 
     const result =
-      await gemini.generateContent([
+      await gemini.models.generateContent({
 
-        REFLECTION_SYSTEM_PROMPT,
+        model: "gemini-3.6-flash",
 
-        prompt,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  REFLECTION_SYSTEM_PROMPT +
+                  "\n" +
+                  prompt,
+              },
+            ],
+          },
+        ],
 
-      ]);
-
-
-
+      });
 
 
     const text =
-      result.response.text();
+      result.text;
+
+
+    if (!text) {
+      throw new Error(
+        "Empty Gemini response"
+      );
+    }
 
 
 
@@ -172,7 +188,7 @@ Return ONLY valid JSON.
 
 
 
-  } catch(error) {
+  } catch (error) {
 
 
     console.error(
@@ -251,7 +267,7 @@ export async function saveReflection(
 
             recommendation:
 
-`Focus tomorrow on:
+              `Focus tomorrow on:
 ${reflection.nextAction}
 
 

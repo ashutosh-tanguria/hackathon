@@ -119,10 +119,10 @@ ${goal.description ?? "No description provided"}
 Student Answers:
 
 ${JSON.stringify(
-  validated.answers,
-  null,
-  2
-)}
+      validated.answers,
+      null,
+      2
+    )}
 
 
 
@@ -147,34 +147,36 @@ Return ONLY valid JSON.
 
 
     const result =
-      await gemini.generateContent([
+      await gemini.models.generateContent({
 
-        SYSTEM_PROMPT,
+        model: "gemini-3.6-flash",
 
-        prompt,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  SYSTEM_PROMPT + "\n" + prompt,
+              },
+            ],
+          },
+        ],
 
-      ]);
-
-
-
-
-
-    const response =
-      result.response.text();
-
-
-
-
-
-    return JSON.parse(
-      response
-    );
+      });
 
 
+    const text = result.text;
 
+    if (!text) {
+      throw new Error(
+        "Empty Gemini response"
+      );
+    }
 
+    return JSON.parse(text);
 
-  } catch(error) {
+  } catch (error) {
 
 
     console.error(

@@ -41,7 +41,7 @@ export async function generateInsight(): Promise<AIInsight> {
 
 
 
-    if(!user){
+    if (!user) {
 
       return fallback;
 
@@ -55,75 +55,75 @@ export async function generateInsight(): Promise<AIInsight> {
       reflections,
       sessions,
     ] =
-    await Promise.all([
+      await Promise.all([
 
 
-      prisma.goal.findFirst({
+        prisma.goal.findFirst({
 
-        where:{
-          userId:user.id,
-        },
-
-
-        orderBy:{
-          createdAt:"desc",
-        },
+          where: {
+            userId: user.id,
+          },
 
 
-        include:{
+          orderBy: {
+            createdAt: "desc",
+          },
 
-          roadmap:{
 
-            include:{
-              nodes:true,
+          include: {
+
+            roadmap: {
+
+              include: {
+                nodes: true,
+              },
+
             },
 
           },
 
-        },
-
-      }),
+        }),
 
 
 
 
-      prisma.reflectionSession.findMany({
+        prisma.reflectionSession.findMany({
 
-        where:{
-          userId:user.id,
-        },
-
-
-        orderBy:{
-          createdAt:"desc",
-        },
+          where: {
+            userId: user.id,
+          },
 
 
-        take:3,
-
-      }),
-
-
+          orderBy: {
+            createdAt: "desc",
+          },
 
 
-      prisma.learningSession.findMany({
+          take: 3,
 
-        where:{
-          userId:user.id,
-        },
+        }),
 
 
-        orderBy:{
-          createdAt:"desc",
-        },
 
 
-        take:5,
+        prisma.learningSession.findMany({
 
-      }),
+          where: {
+            userId: user.id,
+          },
 
 
-    ]);
+          orderBy: {
+            createdAt: "desc",
+          },
+
+
+          take: 5,
+
+        }),
+
+
+      ]);
 
 
 
@@ -132,7 +132,7 @@ export async function generateInsight(): Promise<AIInsight> {
 
     const completed =
       goal?.roadmap?.nodes.filter(
-        node=>node.completed
+        node => node.completed
       ).length ?? 0;
 
 
@@ -144,7 +144,7 @@ export async function generateInsight(): Promise<AIInsight> {
 
     const nextNode =
       goal?.roadmap?.nodes.find(
-        node=>!node.completed
+        node => !node.completed
       );
 
 
@@ -153,11 +153,11 @@ export async function generateInsight(): Promise<AIInsight> {
 
     const reflectionContext =
       reflections
-      .map(
-        reflection=>reflection.summary
-      )
-      .filter(Boolean)
-      .join("\n");
+        .map(
+          reflection => reflection.summary
+        )
+        .filter(Boolean)
+        .join("\n");
 
 
 
@@ -205,19 +205,36 @@ Return ONLY valid JSON.
 
 
     const result =
-      await gemini.generateContent([
+      await gemini.models.generateContent({
 
-        INSIGHT_SYSTEM_PROMPT,
+        model: "gemini-3.5-flash-lite",
 
-        prompt,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  INSIGHT_SYSTEM_PROMPT +
+                  "\n" +
+                  prompt,
+              },
+            ],
+          },
+        ],
 
-      ]);
-
-
+      });
 
 
     const text =
-      result.response.text();
+      result.text;
+
+
+    if (!text) {
+      throw new Error(
+        "Empty Gemini response"
+      );
+    }
 
 
 
@@ -227,7 +244,7 @@ Return ONLY valid JSON.
 
 
 
-  } catch(error){
+  } catch (error) {
 
 
     console.error(

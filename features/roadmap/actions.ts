@@ -55,10 +55,10 @@ ${goal.description ?? "No description provided"}
 Assessment Result:
 
 ${JSON.stringify(
-  input.assessment,
-  null,
-  2
-)}
+    input.assessment,
+    null,
+    2
+  )}
 
 
 Generate a personalized learning roadmap based ONLY on this goal.
@@ -71,17 +71,36 @@ The roadmap domain must match the goal.
 
 
   const result =
-    await gemini.generateContent([
-      ROADMAP_SYSTEM_PROMPT,
-      prompt,
-    ]);
+    await gemini.models.generateContent({
 
+      model: "gemini-3.6-flash",
+
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text:
+                ROADMAP_SYSTEM_PROMPT +
+                "\n" +
+                prompt,
+            },
+          ],
+        },
+      ],
+
+    });
 
 
   const text =
-    result.response.text();
+    result.text;
 
 
+  if (!text) {
+    throw new Error(
+      "Empty Gemini response"
+    );
+  }
 
   return roadmapSchema.parse(
     JSON.parse(text)

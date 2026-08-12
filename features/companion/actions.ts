@@ -24,12 +24,12 @@ export async function askCompanion(
   message: string
 ): Promise<CompanionResponse> {
 
-const fallback: CompanionResponse = {
+  const fallback: CompanionResponse = {
 
-  reply:
-    "Keep focusing on your learning roadmap. Complete your next planned task and maintain consistency.",
+    reply:
+      "Keep focusing on your learning roadmap. Complete your next planned task and maintain consistency.",
 
-};
+  };
 
 
 
@@ -181,23 +181,21 @@ ${goal?.description ?? "None"}
 
 Completed Topics:
 
-${
-  completed
-    .map((n) => n.title)
-    .join(", ")
-    || "None"
-}
+${completed
+        .map((n) => n.title)
+        .join(", ")
+      || "None"
+      }
 
 
 
 Remaining Topics:
 
-${
-  remaining
-    .map((n) => n.title)
-    .join(", ")
-    || "None"
-}
+${remaining
+        .map((n) => n.title)
+        .join(", ")
+      || "None"
+      }
 
 
 
@@ -228,22 +226,37 @@ Return ONLY valid JSON.
 
 
 
-
     const result =
-      await gemini.generateContent([
+      await gemini.models.generateContent({
 
-        COMPANION_SYSTEM_PROMPT,
+        model: "gemini-3.6-flash",
 
-        prompt,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text:
+                  COMPANION_SYSTEM_PROMPT +
+                  "\n" +
+                  prompt,
+              },
+            ],
+          },
+        ],
 
-      ]);
-
-
-
+      });
 
 
     const text =
-      result.response.text();
+      result.text;
+
+
+    if (!text) {
+      throw new Error(
+        "Empty Gemini response"
+      );
+    }
 
 
 
@@ -260,7 +273,7 @@ Return ONLY valid JSON.
 
 
 
-  } catch(error) {
+  } catch (error) {
 
 
     console.error(
