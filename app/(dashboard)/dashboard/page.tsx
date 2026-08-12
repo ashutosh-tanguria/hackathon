@@ -147,9 +147,10 @@ total === 0
 
 
 const nextNode =
-roadmap?.nodes.find(
-node=>!node.completed
-);
+  roadmap?.nodes.find(
+    (node: { completed: boolean }) =>
+      !node.completed
+  );
 
 
 
