@@ -130,10 +130,11 @@ export async function generateInsight(): Promise<AIInsight> {
 
 
 
-    const completed =
-      goal?.roadmap?.nodes.filter(
-        node => node.completed
-      ).length ?? 0;
+   const completed =
+  goal?.roadmap?.nodes.filter(
+    (node: { completed: boolean }) =>
+      node.completed
+  ).length ?? 0;
 
 
 
@@ -143,9 +144,10 @@ export async function generateInsight(): Promise<AIInsight> {
 
 
     const nextNode =
-      goal?.roadmap?.nodes.find(
-        node => !node.completed
-      );
+  goal?.roadmap?.nodes.find(
+    (node: { completed: boolean }) =>
+      !node.completed
+  );
 
 
 
