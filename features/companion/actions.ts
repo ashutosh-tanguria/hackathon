@@ -142,21 +142,21 @@ export async function askCompanion(
 
 
 
-    const completed =
-      goal?.roadmap?.nodes.filter(
-        (node) =>
-          node.completed
-      ) ?? [];
+   const completed =
+  goal?.roadmap?.nodes.filter(
+    (node: { completed: boolean }) =>
+      node.completed
+  ) ?? [];
 
 
 
 
 
     const remaining =
-      goal?.roadmap?.nodes.filter(
-        (node) =>
-          !node.completed
-      ) ?? [];
+  goal?.roadmap?.nodes.filter(
+    (node: { completed: boolean }) =>
+      !node.completed
+  ) ?? [];
 
 
 
