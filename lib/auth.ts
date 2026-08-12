@@ -11,5 +11,5 @@ export const auth = betterAuth({
     enabled: true,
   },
 
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: ["https://study-os-green-seven.vercel.app"],
 });
