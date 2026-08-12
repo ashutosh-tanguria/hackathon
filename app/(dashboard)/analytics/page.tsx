@@ -122,13 +122,12 @@ export default async function AnalyticsPage(){
 
 
 
-  const studyMinutes =
-    totalMinutes.reduce(
-      (sum,item)=>
-        sum + (item.duration ?? 0),
-      0,
-    );
-
+const studyMinutes =
+  totalMinutes.reduce(
+    (sum, item) =>
+      sum + (item.duration ?? 0),
+    0
+  );
 
 
 
