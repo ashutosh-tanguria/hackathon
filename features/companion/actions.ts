@@ -182,17 +182,16 @@ ${goal?.description ?? "None"}
 Completed Topics:
 
 ${completed
-        .map((n) => n.title)
-        .join(", ")
-      || "None"
-      }
+  .map((n: { title: string }) => n.title)
+  .join(", ")
+  || "None"}
 
 
 
 Remaining Topics:
 
 ${remaining
-        .map((n) => n.title)
+  .map((n: { title: string }) => n.title)
         .join(", ")
       || "None"
       }
