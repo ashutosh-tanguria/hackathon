@@ -1,5 +1,5 @@
 import { getReflections } from "../actions";
-
+import type { ReflectionSession } from "@prisma/client";
 export async function ReflectionHistory() {
   const reflections = await getReflections();
 
@@ -23,7 +23,7 @@ export async function ReflectionHistory() {
         Reflection History
       </h2>
 
-      {reflections.map((reflection) => {
+      {reflections.map((reflection: ReflectionSession) => {
         let feedback: {
           strengths?: string[];
           improvements?: string[];
