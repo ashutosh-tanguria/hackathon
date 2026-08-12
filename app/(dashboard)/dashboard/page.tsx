@@ -125,9 +125,10 @@ userId:user.id,
 
 
 const completed =
-roadmap?.nodes.filter(
-node=>node.completed
-).length ?? 0;
+  roadmap?.nodes.filter(
+    (node: { completed: boolean }) =>
+      node.completed
+  ).length ?? 0;
 
 
 
