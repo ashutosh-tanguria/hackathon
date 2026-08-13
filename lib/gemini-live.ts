@@ -59,7 +59,11 @@ type GeminiMessage = {
 
 const DEFAULT_WS_URL =
   process.env.NEXT_PUBLIC_LIVE_WS_URL ??
-  "ws://localhost:8000";
+  (
+    typeof window !== "undefined"
+      ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/api/live/ws`
+      : "ws://localhost:8000"
+  );
 
 
 
