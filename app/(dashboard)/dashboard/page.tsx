@@ -1,580 +1,970 @@
 import Link from "next/link";
 
+
 import {
-Target,
-Brain,
-BookOpen,
-ArrowRight,
-Sparkles,
-Plus,
-Mic,
+  Target,
+  Brain,
+  BookOpen,
+  ArrowRight,
+  Sparkles,
+  Plus,
+  Mic,
+  FolderKanban,
 } from "lucide-react";
+
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/current-user";
 
+
 import { DashboardGoals } from "@/features/goals/components/dashboard-goals";
 import { InsightCard } from "@/features/insights/components/insight-card";
 
+
 import {
-Card,
-CardContent,
-CardHeader,
-CardTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
+
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 
 
+
+
 export default async function DashboardPage() {
 
 
-const user =
-await getCurrentUser();
 
-
-
-if(!user){
-
-return (
-<div>
-Unauthorized
-</div>
-);
-
-}
+  const user =
+    await getCurrentUser();
 
 
 
 
+  if (!user) {
 
-const [
-roadmap,
-reflectionCount,
-sessionCount,
-goalsCount,
-] =
-await Promise.all([
+    return (
+      <div>
+        Unauthorized
+      </div>
+    );
 
-
-prisma.roadmap.findFirst({
-
-where:{
-goal:{
-userId:user.id,
-},
-},
-
-
-include:{
-
-goal:true,
-
-nodes:{
-orderBy:{
-position:"asc",
-},
-},
-
-},
-
-
-orderBy:{
-createdAt:"desc",
-},
-
-}),
-
-
-
-prisma.reflectionSession.count({
-
-where:{
-userId:user.id,
-},
-
-}),
-
-
-
-prisma.learningSession.count({
-
-where:{
-userId:user.id,
-},
-
-}),
-
-
-
-prisma.goal.count({
-
-where:{
-userId:user.id,
-},
-
-}),
-
-
-]);
+  }
 
 
 
 
 
-const completed =
-  roadmap?.nodes.filter(
-    (node: { completed: boolean }) =>
-      node.completed
-  ).length ?? 0;
+
+
+  const [
+    roadmap,
+    reflectionCount,
+    sessionCount,
+    goalsCount,
+    projects,
+  ] =
+    await Promise.all([
 
 
 
-const total =
-roadmap?.nodes.length ?? 0;
+
+      prisma.roadmap.findFirst({
+
+
+        where: {
+
+          goal: {
+
+            userId: user.id,
+
+          },
+
+        },
 
 
 
-const progress =
-total === 0
-? 0
-: Math.round(
-(completed / total) * 100
-);
+        include: {
+
+
+          goal: true,
+
+
+          nodes: {
+
+            orderBy: {
+
+              position: "asc",
+
+            },
+
+          },
+
+
+        },
 
 
 
-const nextNode =
-  roadmap?.nodes.find(
-    (node: { completed: boolean }) =>
-      !node.completed
+        orderBy: {
+
+          createdAt: "desc",
+
+        },
+
+
+      }),
+
+
+
+
+
+
+
+      prisma.reflectionSession.count({
+
+
+        where: {
+
+          userId: user.id,
+
+        },
+
+
+      }),
+
+
+
+
+
+
+
+
+      prisma.learningSession.count({
+
+
+        where: {
+
+          userId: user.id,
+
+        },
+
+
+      }),
+
+
+
+
+
+
+
+
+      prisma.goal.count({
+
+
+        where: {
+
+          userId: user.id,
+
+        },
+
+
+      }),
+
+
+
+
+
+
+
+      prisma.project.findMany({
+
+
+        where: {
+
+          userId: user.id,
+
+        },
+
+
+        orderBy: {
+
+          createdAt: "desc",
+
+        },
+
+
+        take: 3,
+
+
+      }),
+
+
+
+    ]);
+
+
+
+
+
+
+
+
+  const completed =
+    roadmap?.nodes.filter(
+      (node: { completed: boolean }) =>
+        node.completed
+    ).length ?? 0;
+
+
+
+
+
+  const total =
+    roadmap?.nodes.length ?? 0;
+
+
+
+
+
+  const progress =
+    total === 0
+      ? 0
+      : Math.round(
+          (completed / total) * 100
+        );
+
+
+
+
+
+
+  const nextNode =
+    roadmap?.nodes.find(
+      (node: { completed: boolean }) =>
+        !node.completed
+    );
+
+
+
+
+
+
+  const completedProjects =
+    projects.filter(
+      (project) =>
+        project.status === "COMPLETED"
+    ).length;
+
+
+
+
+
+
+  const activeProjects =
+    projects.filter(
+      (project) =>
+        project.status === "IN_PROGRESS"
+    ).length;
+
+
+
+
+
+
+
+
+
+  return (
+
+
+    <main className="space-y-10">
+
+
+
+
+
+      <section>
+
+
+        <div className="flex items-center justify-between">
+
+
+          <div>
+
+
+            <h1 className="text-4xl font-bold">
+
+              Welcome back, {user.name ?? "Student"} 👋
+
+            </h1>
+
+
+
+            <p className="mt-2 text-muted-foreground">
+
+              Your AI powered learning workspace.
+
+            </p>
+
+
+          </div>
+
+
+
+
+
+          <Link href="/goals">
+
+
+            <Button>
+
+
+              <Plus className="mr-2 h-4 w-4"/>
+
+
+              New Goal
+
+
+            </Button>
+
+
+          </Link>
+
+
+        </div>
+
+
+      </section>
+
+
+
+
+
+
+
+
+
+      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-5">
+
+
+
+
+
+        <Card>
+
+          <CardHeader>
+
+            <CardTitle className="flex items-center gap-2">
+
+              <Target className="h-5 w-5"/>
+
+              Goals
+
+            </CardTitle>
+
+          </CardHeader>
+
+
+
+          <CardContent>
+
+
+            <p className="text-4xl font-bold">
+
+              {goalsCount}
+
+            </p>
+
+
+            <p className="text-sm text-muted-foreground">
+
+              Learning goals
+
+            </p>
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+
+
+
+        <Card>
+
+          <CardHeader>
+
+            <CardTitle className="flex items-center gap-2">
+
+
+              <Brain className="h-5 w-5"/>
+
+
+              Progress
+
+
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+
+          <CardContent>
+
+
+            <p className="text-4xl font-bold">
+
+              {progress}%
+
+            </p>
+
+
+
+            <Progress
+
+              value={progress}
+
+              className="mt-3"
+
+            />
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+
+
+
+        <Card>
+
+
+          <CardHeader>
+
+
+            <CardTitle className="flex items-center gap-2">
+
+
+              <BookOpen className="h-5 w-5"/>
+
+
+              Sessions
+
+
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+
+
+          <CardContent>
+
+
+            <p className="text-4xl font-bold">
+
+              {sessionCount}
+
+            </p>
+
+
+
+            <p className="text-sm text-muted-foreground">
+
+              Study sessions completed
+
+            </p>
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+
+
+
+        <Card>
+
+
+          <CardHeader>
+
+
+            <CardTitle className="flex items-center gap-2">
+
+
+              <Sparkles className="h-5 w-5"/>
+
+
+              Reflections
+
+
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+
+          <CardContent>
+
+
+            <p className="text-4xl font-bold">
+
+              {reflectionCount}
+
+            </p>
+
+
+
+            <p className="text-sm text-muted-foreground">
+
+              AI learning reflections
+
+            </p>
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+
+
+
+        <Card>
+
+
+          <CardHeader>
+
+
+            <CardTitle className="flex items-center gap-2">
+
+
+              <FolderKanban className="h-5 w-5"/>
+
+
+              Projects
+
+
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+
+          <CardContent>
+
+
+            <p className="text-4xl font-bold">
+
+              {projects.length}
+
+            </p>
+
+
+
+            <p className="text-sm text-muted-foreground">
+
+              {completedProjects} completed • {activeProjects} active
+
+            </p>
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+      </section>
+
+
+
+
+
+
+
+
+
+      <section className="grid gap-6 lg:grid-cols-3">
+
+
+
+
+
+        <Card className="lg:col-span-2">
+
+
+          <CardHeader>
+
+
+            <CardTitle>
+              Current Goal
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+          <CardContent>
+
+
+            {
+              roadmap ? (
+
+
+                <>
+
+
+                  <h2 className="text-xl font-semibold">
+
+
+                    {roadmap.goal.title}
+
+
+                  </h2>
+
+
+
+                  <p className="mt-2 text-muted-foreground">
+
+
+                    {roadmap.goal.description}
+
+
+                  </p>
+
+
+                </>
+
+
+              ) : (
+
+
+                <p className="text-muted-foreground">
+
+
+                  Create your first goal to start your AI learning journey.
+
+
+                </p>
+
+
+              )
+
+            }
+
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+
+
+
+        <Card>
+
+
+          <CardHeader>
+
+
+            <CardTitle>
+
+              AI Actions
+
+            </CardTitle>
+
+
+          </CardHeader>
+
+
+
+          <CardContent className="space-y-3">
+
+
+
+            <Link href="/assessment">
+
+
+              <Button variant="outline" className="w-full">
+
+
+                <Brain className="mr-2 h-4 w-4"/>
+
+
+                Take Assessment
+
+
+              </Button>
+
+
+            </Link>
+
+
+
+
+
+            <Link href="/voice">
+
+
+              <Button variant="outline" className="w-full">
+
+
+                <Mic className="mr-2 h-4 w-4"/>
+
+
+                Talk to AI
+
+
+              </Button>
+
+
+            </Link>
+
+
+
+          </CardContent>
+
+
+        </Card>
+
+
+
+
+
+      </section>
+
+
+
+
+
+
+
+
+
+      <Card>
+
+
+        <CardHeader>
+
+
+          <CardTitle>
+
+            Next Learning Step
+
+          </CardTitle>
+
+
+        </CardHeader>
+
+
+
+
+
+        <CardContent>
+
+
+
+          {
+            nextNode ? (
+
+
+              <>
+
+
+                <p className="text-sm text-muted-foreground">
+
+                  Week {nextNode.week}
+
+                </p>
+
+
+
+                <h3 className="mt-2 text-xl font-semibold">
+
+                  {nextNode.title}
+
+                </h3>
+
+
+
+                <p className="mt-2 text-muted-foreground">
+
+                  {nextNode.description}
+
+                </p>
+
+
+
+                <Link href="/roadmap">
+
+
+                  <Button className="mt-5">
+
+
+                    Continue Learning
+
+
+                    <ArrowRight className="ml-2 h-4 w-4"/>
+
+
+                  </Button>
+
+
+                </Link>
+
+
+              </>
+
+
+            ) : (
+
+
+              <p>
+
+                🎉 Roadmap completed
+
+              </p>
+
+
+            )
+
+
+          }
+
+
+
+        </CardContent>
+
+
+
+      </Card>
+
+
+
+
+
+
+
+
+      <Card>
+
+
+        <CardHeader>
+
+          <CardTitle>
+            Recent Projects
+          </CardTitle>
+
+        </CardHeader>
+
+
+        <CardContent className="space-y-4">
+
+
+          {
+            projects.length === 0 ? (
+
+              <p className="text-muted-foreground">
+
+                No projects added yet.
+
+              </p>
+
+
+            ) : (
+
+
+              projects.map(
+                (project) => (
+
+                  <div
+                    key={project.id}
+                    className="rounded-lg border p-4"
+                  >
+
+                    <h3 className="font-semibold">
+
+                      {project.title}
+
+                    </h3>
+
+
+                    <p className="text-sm text-muted-foreground">
+
+                      {project.category} • {project.status}
+
+                    </p>
+
+
+                  </div>
+
+                )
+              )
+
+
+            )
+
+          }
+
+
+
+          <Link href="/projects">
+
+
+            <Button variant="outline">
+
+              View All Projects
+
+            </Button>
+
+
+          </Link>
+        </CardContent>
+      </Card>
+      <InsightCard />
+      <DashboardGoals />
+    </main>
   );
-
-
-
-
-
-return (
-
-<main className="space-y-10">
-
-
-
-<section>
-
-<div className="flex items-center justify-between">
-
-
-<div>
-
-<h1 className="text-4xl font-bold">
-
-Welcome back, {user.name ?? "Student"} 👋
-
-</h1>
-
-
-<p className="mt-2 text-muted-foreground">
-
-Your AI powered learning workspace.
-
-</p>
-
-</div>
-
-
-
-<Link href="/goals">
-
-<Button>
-
-<Plus className="mr-2 h-4 w-4"/>
-
-New Goal
-
-</Button>
-
-</Link>
-
-
-</div>
-
-</section>
-
-
-
-
-
-
-
-
-<section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle className="flex items-center gap-2">
-
-<Target className="h-5 w-5"/>
-
-Goals
-
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-<p className="text-4xl font-bold">
-{goalsCount}
-</p>
-
-<p className="text-sm text-muted-foreground">
-Learning goals
-</p>
-
-</CardContent>
-
-</Card>
-
-
-
-
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle className="flex items-center gap-2">
-
-<Brain className="h-5 w-5"/>
-
-Progress
-
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-<p className="text-4xl font-bold">
-
-{progress}%
-
-</p>
-
-
-<Progress
-value={progress}
-className="mt-3"
-/>
-
-</CardContent>
-
-</Card>
-
-
-
-
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle className="flex items-center gap-2">
-
-<BookOpen className="h-5 w-5"/>
-
-Sessions
-
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-<p className="text-4xl font-bold">
-
-{sessionCount}
-
-</p>
-
-
-<p className="text-sm text-muted-foreground">
-Study sessions completed
-</p>
-
-
-</CardContent>
-
-</Card>
-
-
-
-
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle className="flex items-center gap-2">
-
-<Sparkles className="h-5 w-5"/>
-
-Reflections
-
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-<p className="text-4xl font-bold">
-
-{reflectionCount}
-
-</p>
-
-
-<p className="text-sm text-muted-foreground">
-AI learning reflections
-</p>
-
-
-</CardContent>
-
-</Card>
-
-
-
-
-</section>
-
-
-
-
-
-
-
-<section className="grid gap-6 lg:grid-cols-3">
-
-
-
-<Card className="lg:col-span-2">
-
-<CardHeader>
-
-<CardTitle>
-Current Goal
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-
-{
-roadmap ? (
-
-<>
-
-<h2 className="text-xl font-semibold">
-
-{roadmap.goal.title}
-
-</h2>
-
-
-<p className="mt-2 text-muted-foreground">
-
-{roadmap.goal.description}
-
-</p>
-
-</>
-
-
-) : (
-
-<p className="text-muted-foreground">
-
-Create your first goal to start your AI learning journey.
-
-</p>
-
-)
-
-}
-
-
-</CardContent>
-
-</Card>
-
-
-
-
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle>
-AI Actions
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent className="space-y-3">
-
-
-<Link href="/assessment">
-
-<Button variant="outline" className="w-full">
-
-<Brain className="mr-2 h-4 w-4"/>
-
-Take Assessment
-
-</Button>
-
-</Link>
-
-
-
-<Link href="/voice">
-
-<Button variant="outline" className="w-full">
-
-<Mic className="mr-2 h-4 w-4"/>
-
-Talk to AI
-
-</Button>
-
-</Link>
-
-
-</CardContent>
-
-</Card>
-
-
-
-</section>
-
-
-
-
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle>
-Next Learning Step
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-
-{
-nextNode ? (
-
-<>
-
-<p className="text-sm text-muted-foreground">
-
-Week {nextNode.week}
-
-</p>
-
-
-<h3 className="mt-2 text-xl font-semibold">
-
-{nextNode.title}
-
-</h3>
-
-
-<p className="mt-2 text-muted-foreground">
-
-{nextNode.description}
-
-</p>
-
-
-<Link href="/roadmap">
-
-<Button className="mt-5">
-
-Continue Learning
-
-<ArrowRight className="ml-2 h-4 w-4"/>
-
-</Button>
-
-</Link>
-
-
-</>
-
-
-) : (
-
-<p>
-🎉 Roadmap completed
-</p>
-
-)
-
-}
-
-
-</CardContent>
-
-
-</Card>
-
-
-
-
-
-
-<InsightCard />
-
-
-
-<DashboardGoals />
-
-
-
-</main>
-
-);
-
 }
