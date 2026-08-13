@@ -54,35 +54,47 @@ wss.on(
     try {
 
 
-      session =
-        await ai.live.connect({
+     session =
+  await ai.live.connect({
 
-          model:
-            process.env.GEMINI_LIVE_MODEL ??
-            "gemini-live-2.5-flash-preview",
+    model:
+      process.env.GEMINI_LIVE_MODEL ??
+      "gemini-live-2.5-flash-preview",
 
+    config: {
 
-          config: {
+      responseModalities: [
+        Modality.AUDIO,
+      ],
 
-            responseModalities: [
-              Modality.AUDIO,
-            ],
-
+      systemInstruction: {
+        parts: [
+          {
+            text:
+              "You are StudyOS Voice Companion. Help students with learning, planning, productivity and reflections. Keep responses practical and concise.",
           },
+        ],
+      },
+
+    },
 
 
 
           callbacks: {
 
 
-            onopen() {
+           onopen() {
 
-              console.log(
-                "Gemini Live connected",
-              );
+  console.log(
+    "Gemini Live connected",
+  );
 
-            },
 
+  session?.sendRealtimeInput({
+    activityStart: {},
+  });
+
+},
 
 
             onmessage(message) {
@@ -117,13 +129,14 @@ wss.on(
 
 
 
-            onclose() {
+            onclose(event) {
 
-              console.log(
-                "Gemini Live closed",
-              );
+  console.log(
+    "Gemini Live closed",
+    event,
+  );
 
-            },
+},
 
 
           },
