@@ -4,9 +4,10 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "dev": "tsx server.ts",
-    "start": "tsx server.ts"
-  },
+  "dev": "tsx server.ts",
+  "build": "tsc server.ts --outDir dist",
+  "start": "node dist/server.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
