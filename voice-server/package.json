@@ -2,11 +2,10 @@
   "name": "voice-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-     "dev": "tsx server.ts",
-  "start": "node server.js"
+    "dev": "tsx server.ts",
+    "start": "tsx server.ts"
   },
   "keywords": [],
   "author": "",
