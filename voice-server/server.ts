@@ -59,7 +59,7 @@ wss.on(
 
     model:
       process.env.GEMINI_LIVE_MODEL ??
-      "gemini-live-2.5-flash-preview",
+"gemini-2.5-flash-native-audio-preview-12-2025",
 
     config: {
 
