@@ -13,8 +13,7 @@ const PORT =
 
 const ai =
   new GoogleGenAI({
-    apiKey:
-      process.env.GEMINI_API_KEY!,
+    apiKey: process.env.GEMINI_API_KEY!,
   });
 
 
@@ -54,63 +53,67 @@ wss.on(
     try {
 
 
-     session =
-  await ai.live.connect({
+      session =
+        await ai.live.connect({
 
-    model:
-      process.env.GEMINI_LIVE_MODEL ??
-"gemini-2.5-flash-native-audio-preview-12-2025",
 
-    config: {
+          model:
+            "gemini-2.5-flash-native-audio-preview-12-2025",
 
-      responseModalities: [
-        Modality.AUDIO,
-      ],
 
-      systemInstruction: {
-        parts: [
-          {
-            text:
-              "You are StudyOS Voice Companion. Help students with learning, planning, productivity and reflections. Keep responses practical and concise.",
+
+          config: {
+
+
+            responseModalities: [
+              Modality.AUDIO,
+            ],
+
+
+            systemInstruction: {
+              parts: [
+                {
+                  text:
+                    "You are StudyOS Voice Companion. Help students with learning, planning, productivity and reflections. Keep responses practical and concise.",
+                },
+              ],
+            },
+
+
           },
-        ],
-      },
-
-    },
 
 
 
           callbacks: {
 
 
-           onopen() {
+            onopen() {
 
-  console.log(
-    "Gemini Live connected",
-  );
+              console.log(
+                "Gemini Live connected",
+              );
 
+            },
 
-  session?.sendRealtimeInput({
-    activityStart: {},
-  });
-
-},
 
 
             onmessage(message) {
+
+
+              console.log(
+                "Gemini message received",
+              );
 
 
               if (
                 ws.readyState === ws.OPEN
               ) {
 
-
                 ws.send(
                   JSON.stringify(
                     message,
                   ),
                 );
-
 
               }
 
@@ -131,12 +134,12 @@ wss.on(
 
             onclose(event) {
 
-  console.log(
-    "Gemini Live closed",
-    event,
-  );
+              console.log(
+                "Gemini Live closed",
+                event,
+              );
 
-},
+            },
 
 
           },
@@ -156,16 +159,53 @@ wss.on(
           try {
 
 
-            const message =
+            const clientMessage =
               JSON.parse(
                 data.toString(),
               );
 
 
-
-            session?.sendRealtimeInput(
-              message,
+            console.log(
+              "Client message:",
+              Object.keys(clientMessage),
             );
+
+
+
+            if (
+              clientMessage.realtimeInput?.audio
+            ) {
+
+
+              session?.sendRealtimeInput({
+
+                audio:
+                  clientMessage
+                    .realtimeInput
+                    .audio,
+
+              });
+
+
+            }
+
+
+            if (
+              clientMessage.realtimeInput?.text
+            ) {
+
+
+              session?.sendRealtimeInput({
+
+                text:
+                  clientMessage
+                    .realtimeInput
+                    .text,
+
+              });
+
+
+            }
 
 
 
@@ -183,6 +223,7 @@ wss.on(
 
         },
       );
+
 
 
 

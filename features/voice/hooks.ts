@@ -297,13 +297,38 @@ export function useVoiceCompanion() {
 
 
 
-          clientRef.current =
-            client;
+         clientRef.current =
+  client;
 
 
+await client.connect();
 
-          await client.connect();
 
+const context =
+  await fetch(
+    "/api/voice/context"
+  ).then(
+    res => res.json()
+  );
+
+
+client.sendText(
+`
+You are StudyOS Voice Companion.
+
+Here is the student's learning context:
+
+Goals:
+${JSON.stringify(context.goals, null, 2)}
+
+Reflections:
+${JSON.stringify(context.reflections, null, 2)}
+
+Use this information naturally.
+Refer to previous goals, progress and reflections when answering.
+Do not say you don't know the student's history.
+`
+);
 
 
           const stream =

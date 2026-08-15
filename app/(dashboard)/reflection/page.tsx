@@ -1,7 +1,24 @@
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/current-user";
 import { ReflectionForm } from "@/features/reflection/components/reflection-form";
 import { ReflectionHistory } from "@/features/reflection/components/reflection-history";
 
-export default function ReflectionPage() {
+
+export default async function ReflectionPage() {
+
+  const user = await getCurrentUser();
+
+
+  const goal = await prisma.goal.findFirst({
+    where: {
+      userId: user?.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+
   return (
     <main className="space-y-8">
 
@@ -15,7 +32,11 @@ export default function ReflectionPage() {
         </p>
       </div>
 
-      <ReflectionForm />
+
+      <ReflectionForm
+        goalId={goal?.id}
+      />
+
 
       <ReflectionHistory />
 
