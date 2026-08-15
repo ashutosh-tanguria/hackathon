@@ -142,21 +142,21 @@ export async function askCompanion(
 
 
 
-   const completed =
-  goal?.roadmap?.nodes.filter(
-    (node: { completed: boolean }) =>
-      node.completed
-  ) ?? [];
+    const completed =
+      goal?.roadmap?.nodes.filter(
+        (node: { completed: boolean }) =>
+          node.completed
+      ) ?? [];
 
 
 
 
 
     const remaining =
-  goal?.roadmap?.nodes.filter(
-    (node: { completed: boolean }) =>
-      !node.completed
-  ) ?? [];
+      goal?.roadmap?.nodes.filter(
+        (node: { completed: boolean }) =>
+          !node.completed
+      ) ?? [];
 
 
 
@@ -182,16 +182,16 @@ ${goal?.description ?? "None"}
 Completed Topics:
 
 ${completed
-  .map((n: { title: string }) => n.title)
-  .join(", ")
-  || "None"}
+        .map((n: { title: string }) => n.title)
+        .join(", ")
+      || "None"}
 
 
 
 Remaining Topics:
 
 ${remaining
-  .map((n: { title: string }) => n.title)
+        .map((n: { title: string }) => n.title)
         .join(", ")
       || "None"
       }

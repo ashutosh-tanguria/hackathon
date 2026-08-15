@@ -58,7 +58,7 @@ wss.on(
 
 
           model:
-            "gemini-2.5-flash-native-audio-preview-12-2025",
+            "gemini-3.6-flash-native-audio-preview-12-2025",
 
 
 
@@ -209,7 +209,7 @@ wss.on(
 
 
 
-          } catch(error) {
+          } catch (error) {
 
 
             console.error(
@@ -250,7 +250,7 @@ wss.on(
 
 
 
-    } catch(error) {
+    } catch (error) {
 
 
       console.error(

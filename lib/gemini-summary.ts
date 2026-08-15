@@ -7,7 +7,7 @@ const apiKey =
   process.env.GEMINI_API_KEY;
 
 
-if(!apiKey){
+if (!apiKey) {
   throw new Error(
     "Missing GEMINI_API_KEY"
   );
@@ -22,15 +22,15 @@ const genAI =
 const model =
   genAI.getGenerativeModel({
 
-    model: "gemini-2.5-flash-preview-05-20",
+    model: "gemini-3.6-flash-preview-05-20",
 
   });
 
 
 
 export async function generateVoiceSummary(
-  transcript:string,
-){
+  transcript: string,
+) {
 
   try {
 
@@ -61,7 +61,7 @@ Return only the summary text.
 
 
 
-  } catch(error){
+  } catch (error) {
 
 
     console.error(
